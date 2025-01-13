@@ -1,0 +1,63 @@
+/* App.css */
+
+/* Style for the entire app */
+.App {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Sticky Header style */
+.Dashboard-header {
+    background-color: #1976d2;
+    /* Blue background */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Ensure the header stays on top */
+    width: 100%;
+    /* Make it full width */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Optional: Add a shadow to the header */
+}
+
+/* Centering the title in the header */
+.Dashboard-header h1 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+}
+
+/* Style for the drawers */
+.MuiDrawer-paper {
+    width: 240px;
+}
+
+/* Style the header icons */
+.MuiIconButton-root {
+    color: white;
+}
+
+.MuiIconButton-root:hover {
+    background-color: #f0f0f0;
+    color: #1976d2;
+}
+
+/* Main content style */
+.main-content {
+    flex-grow: 1;
+    /* Allow the main content to fill the available space */
+    overflow-y: auto;
+    /* Allow scrolling if the content overflows */
+    padding: 20px;
+    /* Add some padding to the main content */
+}
