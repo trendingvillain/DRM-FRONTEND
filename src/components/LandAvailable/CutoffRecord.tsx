@@ -45,6 +45,9 @@ const CutoffRecord: React.FC = () => {
   useEffect(() => {
     const fetchCutoffRecords = async () => {
       try {
+        setLoading(true); // Ensure loading state is shown during the fetch
+        setError(null); // Clear any previous error
+
         // Fetch the land details using the land id
         const landResponse = await axios.get<{ name: string }>(`${API_BASE_URL}/api/land-available/${id}`);
         setLandName(landResponse.data.name);
@@ -52,6 +55,10 @@ const CutoffRecord: React.FC = () => {
         // Fetch the cutoff records associated with the land
         const recordsResponse = await axios.get<CutoffRecord[]>(`${API_BASE_URL}/api/cutoff/${id}/cutoffs`);
         setRecords(recordsResponse.data);
+
+        if (recordsResponse.data.length === 0) {
+          setError('No cutoff records available for this land.');
+        }
       } catch (err) {
         setError('Failed to fetch cutoff records.');
       } finally {
@@ -68,7 +75,6 @@ const CutoffRecord: React.FC = () => {
   };
 
   const handleCreateCutoff = () => {
-    // Navigate to the create cutoff form or modal
     navigate(`/create-cutoff/${id}`);
   };
 
@@ -80,23 +86,12 @@ const CutoffRecord: React.FC = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
-          {error}
-        </Alert>
-      </Snackbar>
-    );
-  }
-
   return (
     <Box sx={{ padding: 3 }}>
       <Button variant="contained" color="primary" onClick={() => navigate(-1)} sx={{ marginBottom: 2 }}>
         Go Back
       </Button>
 
-      {/* Add a "+" button to create a new cutoff record */}
       <Button
         variant="contained"
         color="secondary"
@@ -110,7 +105,11 @@ const CutoffRecord: React.FC = () => {
         Cutoff Records for {landName}
       </Typography>
 
-      {records.length > 0 ? (
+      {error ? (
+        <Typography variant="h6" sx={{ marginTop: 2, color: 'gray' }}>
+          {error}
+        </Typography>
+      ) : (
         <Paper>
           <Table>
             <TableHead>
@@ -133,11 +132,17 @@ const CutoffRecord: React.FC = () => {
             </TableBody>
           </Table>
         </Paper>
-      ) : (
-        <Typography variant="h6" sx={{ marginTop: 2 }}>
-          No cutoff records available for this land.
-        </Typography>
       )}
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={error ? 'error' : 'success'} sx={{ width: '100%' }}>
+          {error || 'Cutoff records loaded successfully.'}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
