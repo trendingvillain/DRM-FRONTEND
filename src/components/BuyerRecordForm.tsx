@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -23,19 +23,8 @@ const FormContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
   maxWidth: 1200,
   width: '100%',
-  marginTop: theme.spacing(6),
+  marginTop: 50,
 }));
-
-interface Buyer {
-  id: number;
-  name: string;
-}
-
-interface Variant {
-  productName: number;
-  quantity: number;
-  price: number;
-}
 
 const productNames = [
   { id: 1, name: 'Variant A' },
@@ -47,19 +36,15 @@ const productNames = [
 ];
 
 const BuyerRecordForm: React.FC = () => {
-  const [buyers, setBuyers] = useState<Buyer[]>([]);
-  const [selectedBuyer, setSelectedBuyer] = useState<Buyer | null>(null);
+  const [buyers, setBuyers] = useState<any[]>([]);
+  const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
   const [visitDate, setVisitDate] = useState<string>('');
   const [amount, setAmount] = useState<number>(0);
-  const [variants, setVariants] = useState<Variant[]>([
+  const [varients, setVarients] = useState<{ productName: number; quantity: number; price: number }[]>([
     { productName: 1, quantity: 0, price: 0 },
   ]);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error' | null; message: string }>({
-    type: null,
-    message: '',
-  });
+  const [alert, setAlert] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
-  // Fetch buyers on component mount
   useEffect(() => {
     const fetchBuyers = async () => {
       try {
@@ -67,39 +52,32 @@ const BuyerRecordForm: React.FC = () => {
         setBuyers(response.data);
       } catch (error) {
         console.error('Error fetching buyers:', error);
-        setAlert({ type: 'error', message: 'Failed to fetch buyers. Please try again.' });
       }
     };
     fetchBuyers();
   }, []);
 
-  const handleBuyerChange = (event: SelectChangeEvent<string>) => {
-    const buyerId = parseInt(event.target.value, 10);
-    const selected = buyers.find((buyer) => buyer.id === buyerId);
-    setSelectedBuyer(selected || null);
+const handleBuyerChange = (event: SelectChangeEvent<any>) => {
+  const buyerId = event.target.value;
+  const selected = buyers.find((buyer) => buyer.id === buyerId);
+  setSelectedBuyer(selected || null);
+};
+
+  const handleVarientChange = (index: number, field: string, value: any) => {
+    const updatedVarients = [...varients];
+    updatedVarients[index] = { ...updatedVarients[index], [field]: value || 0 };
+    setVarients(updatedVarients);
   };
 
-  const handleVariantChange = (index: number, field: keyof Variant, value: number) => {
-    const updatedVariants = [...variants];
-    updatedVariants[index] = { ...updatedVariants[index], [field]: value || 0 };
-    setVariants(updatedVariants);
+  const addVarient = () => {
+    setVarients([...varients, { productName: 1, quantity: 0, price: 0 }]);
   };
 
-  const addVariant = () => {
-    setVariants([...variants, { productName: 1, quantity: 0, price: 0 }]);
-  };
-
-  const removeVariant = (index: number) => {
-    if (variants.length > 1) {
-      setVariants(variants.filter((_, i) => i !== index));
+  const removeVarient = (index: number) => {
+    if (varients.length > 1) {
+      const updatedVarients = varients.filter((_, i) => i !== index);
+      setVarients(updatedVarients);
     }
-  };
-
-  const resetForm = () => {
-    setSelectedBuyer(null);
-    setVisitDate('');
-    setAmount(0);
-    setVariants([{ productName: 1, quantity: 0, price: 0 }]);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -110,77 +88,30 @@ const BuyerRecordForm: React.FC = () => {
       return;
     }
 
-    if (!visitDate) {
-      setAlert({ type: 'error', message: 'Please select a visit date.' });
-      return;
-    }
-
     const formData = {
       buyer: { id: selectedBuyer.id },
       visitDate,
       amount: amount || 0,
-      variants: variants.map((variant) => ({
-        productName: productNames.find((product) => product.id === variant.productName)?.name || '',
-        quantity: variant.quantity || 0,
-        price: variant.price || 0,
+      varients: varients.map((varient) => ({
+        productName: productNames.find((product) => product.id === varient.productName)?.name || '',
+        quantity: varient.quantity || 0,
+        price: varient.price || 0,
       })),
     };
 
     try {
-      await axios.post(`${API_BASE_URL}/api/buyer-records`, formData);
-      setAlert({ type: 'success', message: 'Buyer record created successfully!' });
-      resetForm();
-    } catch (error: any) {
-      console.error('Error creating buyer record:', error.response?.data || error.message);
-      const errorMessage = error.response?.data?.error || 'Failed to create buyer record. Please try again.';
-      setAlert({ type: 'error', message: errorMessage });
+      const response = await axios.post(`${API_BASE_URL}/api/buyer-records`, formData);
+      if (response.status === 201) {
+        setAlert({ type: 'success', message: 'Buyer record created successfully!' });
+        setSelectedBuyer(null);
+        setVisitDate('');
+        setAmount(0);
+        setVarients([{ productName: 1, quantity: 0, price: 0 }]);
+      }
+    } catch (error) {
+      setAlert({ type: 'error', message: 'Failed to create buyer record. Please try again.' });
+      console.error('Error creating buyer record:', error);
     }
-  };
-
-  const renderVariantFields = () => {
-    return variants.map((variant, index) => (
-      <Paper key={index} style={{ padding: 16, marginBottom: 16 }}>
-        <Typography variant="h6">Product {index + 1}</Typography>
-        <FormControl fullWidth>
-          <InputLabel>Product Name</InputLabel>
-          <Select
-  value={variant.productName}
-  onChange={(e) => handleVariantChange(index, 'productName', parseInt(e.target.value as string, 10))}
->
-  {productNames.map((product) => (
-    <MenuItem key={product.id} value={product.id}>
-      {product.name}
-    </MenuItem>
-  ))}
-</Select>
-          <FormHelperText>Select the product name.</FormHelperText>
-        </FormControl>
-        <TextField
-          label="Quantity"
-          type="number"
-          fullWidth
-          value={variant.quantity || ''}
-          onChange={(e) => handleVariantChange(index, 'quantity', parseInt(e.target.value, 10) || 0)}
-          helperText="Enter the product quantity."
-        />
-        <TextField
-          label="Price"
-          type="number"
-          fullWidth
-          value={variant.price || ''}
-          onChange={(e) => handleVariantChange(index, 'price', parseFloat(e.target.value) || 0)}
-          helperText="Enter the product price."
-        />
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={() => removeVariant(index)}
-          disabled={variants.length === 1}
-        >
-          Remove Product
-        </Button>
-      </Paper>
-    ));
   };
 
   return (
@@ -200,7 +131,7 @@ const BuyerRecordForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Buyer</InputLabel>
-                <Select value={selectedBuyer ? selectedBuyer.id.toString() : ''} onChange={handleBuyerChange}>
+                <Select value={selectedBuyer ? selectedBuyer.id : ''} onChange={handleBuyerChange}>
                   {buyers.map((buyer) => (
                     <MenuItem key={buyer.id} value={buyer.id}>
                       {buyer.name}
@@ -228,8 +159,50 @@ const BuyerRecordForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              {renderVariantFields()}
-              <Button variant="outlined" onClick={addVariant}>
+              {varients.map((varient, index) => (
+                <Paper key={index} style={{ padding: 16, marginBottom: 16 }}>
+                  <Typography variant="h6">Product {index + 1}</Typography>
+                  <FormControl fullWidth>
+                    <InputLabel>Product Name</InputLabel>
+                    <Select
+                      value={varient.productName}
+                      onChange={(e) => handleVarientChange(index, 'productName', e.target.value)}
+                    >
+                      {productNames.map((product) => (
+                        <MenuItem key={product.id} value={product.id}>
+                          {product.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Select the product name.</FormHelperText>
+                  </FormControl>
+                  <TextField
+                    label="Quantity"
+                    type="number"
+                    fullWidth
+                    value={varient.quantity || ''}
+                    onChange={(e) => handleVarientChange(index, 'quantity', parseInt(e.target.value) || 0)}
+                    helperText="Enter the product quantity."
+                  />
+                  <TextField
+                    label="Price"
+                    type="number"
+                    fullWidth
+                    value={varient.price || ''}
+                    onChange={(e) => handleVarientChange(index, 'price', parseFloat(e.target.value) || 0)}
+                    helperText="Enter the product price."
+                  />
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => removeVarient(index)}
+                    disabled={varients.length === 1}
+                  >
+                    Remove Product
+                  </Button>
+                </Paper>
+              ))}
+              <Button variant="outlined" onClick={addVarient}>
                 Add Product
               </Button>
             </Grid>
