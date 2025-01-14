@@ -18,7 +18,7 @@ import API_BASE_URL from '../../config/apiConfig';
 
 interface LandOwnerRecord {
   id: number;
-  visitDate: string;
+  visit_date: string;
   amount: number;
   reason: string;
 }
@@ -80,7 +80,7 @@ const LandOwnerRecord: React.FC = () => {
               landOwnerRecords.map((record) => (
                 <TableRow key={record.id}>
                   {/* Display visitDate, amount, and reason */}
-                  <TableCell>{new Date(record.visitDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(record.visit_date).toLocaleDateString()}</TableCell>
                   <TableCell>{record.amount}</TableCell>
                   <TableCell>{record.reason}</TableCell>
                 </TableRow>
