@@ -33,7 +33,7 @@ interface Buyer {
 
 interface BuyerRecord {
   id: number;
-  visitDate: string | null; // Allow null if visitDate can be absent
+  visit_date: string | null; // Allow null if visitDate can be absent
   amount: number;
   buyer: Buyer;
   varients: Varient[]; // Variants are no longer nullable
@@ -153,7 +153,7 @@ const BuyerRecordDetails: React.FC = () => {
             Record ID: {record.id}
           </Typography>
           <Typography variant="h6" gutterBottom>
-            Visit Date: {formatDate(record.visitDate)} {/* Updated formatting here */}
+            Visit Date: {formatDate(record.visit_date)} {/* Updated formatting here */}
           </Typography>
           <Typography variant="h6" gutterBottom>
             Total Amount: ${record.amount}
