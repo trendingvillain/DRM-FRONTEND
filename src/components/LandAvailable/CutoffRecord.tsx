@@ -39,6 +39,7 @@ const CutoffRecord: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [landName, setLandName] = useState<string>('');
+  const [landVarient, setLandVarient] = useState<string>('');
   const [records, setRecords] = useState<CutoffRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +52,9 @@ const CutoffRecord: React.FC = () => {
         setError(null); // Clear any previous error
 
         // Fetch the land details using the land id
-        const landResponse = await axios.get<{ name: string }>(`${API_BASE_URL}/api/land-available/${id}`);
+        const landResponse = await axios.get<{ name: string , varient: string}>(`${API_BASE_URL}/api/land-available/${id}`);
         setLandName(landResponse.data.name);
+        setLandVarient(landResponse.data.varient);
 
         // Fetch the cutoff records associated with the land
         const recordsResponse = await axios.get<CutoffRecord[]>(`${API_BASE_URL}/api/cutoff/${id}/cutoffs`);
@@ -104,8 +106,9 @@ const CutoffRecord: React.FC = () => {
       </Button>
 
       <Typography variant="h4" gutterBottom>
-        Cutoff Records for {landName}
+        Cutoff Records for {landName},{landVarient}
       </Typography>
+      
 
       {error ? (
         <Typography variant="h6" sx={{ marginTop: 2, color: 'gray' }}>
@@ -118,7 +121,6 @@ const CutoffRecord: React.FC = () => {
               <TableRow>
                 <TableCell><strong>Date</strong></TableCell>
                 <TableCell><strong>Area</strong></TableCell>
-                <TableCell><strong>Varient</strong></TableCell>
                 <TableCell><strong>No. of Cutted Trees</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -132,7 +134,6 @@ const CutoffRecord: React.FC = () => {
 </TableCell>
 
                   <TableCell>{record.area}</TableCell>
-                  <TableCell>{record.varient}</TableCell>
                   <TableCell>{record.trees}</TableCell>
                 </TableRow>
               ))}
