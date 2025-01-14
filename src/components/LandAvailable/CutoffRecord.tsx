@@ -16,6 +16,8 @@ import {
   Paper,
 } from '@mui/material';
 import API_BASE_URL from '../../config/apiConfig';
+import { format } from 'date-fns';
+
 
 interface CutoffRecord {
   id: number;
@@ -23,7 +25,7 @@ interface CutoffRecord {
   area: string;
   varient: string;
   trees: number;
-  createdDate: string;
+  created_date: string;
   landAvailable: {
     id: number;
     name: string;
@@ -123,7 +125,12 @@ const CutoffRecord: React.FC = () => {
             <TableBody>
               {records.map((record) => (
                 <TableRow key={record.id}>
-                  <TableCell>{new Date(record.createdDate).toLocaleDateString()}</TableCell>
+                  <TableCell>
+  {isNaN(new Date(record.created_date).getTime())
+    ? 'Invalid Date'
+    : format(new Date(record.created_date), 'dd/MM/yyyy')}
+</TableCell>
+
                   <TableCell>{record.area}</TableCell>
                   <TableCell>{record.varient}</TableCell>
                   <TableCell>{record.trees}</TableCell>
