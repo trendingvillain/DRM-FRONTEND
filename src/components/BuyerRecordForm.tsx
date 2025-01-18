@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -40,10 +40,13 @@ const BuyerRecordForm: React.FC = () => {
   const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
   const [visitDate, setVisitDate] = useState<string>('');
   const [amount, setAmount] = useState<number>(0);
-  const [varients, setVarients] = useState<{ productName: number; quantity: number; price: number }[]>([
-    { productName: 1, quantity: 0, price: 0 },
-  ]);
-  const [alert, setAlert] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+  const [varients, setVarients] = useState<
+    { productName: number; quantity: number; price: number; weight: number }[]
+  >([{ productName: 1, quantity: 0, price: 0, weight: 0 }]);
+  const [alert, setAlert] = useState<{ type: 'success' | 'error' | null; message: string }>({
+    type: null,
+    message: '',
+  });
 
   useEffect(() => {
     const fetchBuyers = async () => {
@@ -57,11 +60,11 @@ const BuyerRecordForm: React.FC = () => {
     fetchBuyers();
   }, []);
 
-const handleBuyerChange = (event: SelectChangeEvent<any>) => {
-  const buyerId = event.target.value;
-  const selected = buyers.find((buyer) => buyer.id === buyerId);
-  setSelectedBuyer(selected || null);
-};
+  const handleBuyerChange = (event: SelectChangeEvent<any>) => {
+    const buyerId = event.target.value;
+    const selected = buyers.find((buyer) => buyer.id === buyerId);
+    setSelectedBuyer(selected || null);
+  };
 
   const handleVarientChange = (index: number, field: string, value: any) => {
     const updatedVarients = [...varients];
@@ -70,7 +73,7 @@ const handleBuyerChange = (event: SelectChangeEvent<any>) => {
   };
 
   const addVarient = () => {
-    setVarients([...varients, { productName: 1, quantity: 0, price: 0 }]);
+    setVarients([...varients, { productName: 1, quantity: 0, price: 0, weight: 0 }]);
   };
 
   const removeVarient = (index: number) => {
@@ -96,6 +99,7 @@ const handleBuyerChange = (event: SelectChangeEvent<any>) => {
         productName: productNames.find((product) => product.id === varient.productName)?.name || '',
         quantity: varient.quantity || 0,
         price: varient.price || 0,
+        weight: varient.weight || 0,
       })),
     };
 
@@ -106,7 +110,7 @@ const handleBuyerChange = (event: SelectChangeEvent<any>) => {
         setSelectedBuyer(null);
         setVisitDate('');
         setAmount(0);
-        setVarients([{ productName: 1, quantity: 0, price: 0 }]);
+        setVarients([{ productName: 1, quantity: 0, price: 0, weight: 0 }]);
       }
     } catch (error) {
       setAlert({ type: 'error', message: 'Failed to create buyer record. Please try again.' });
@@ -183,6 +187,14 @@ const handleBuyerChange = (event: SelectChangeEvent<any>) => {
                     value={varient.quantity || ''}
                     onChange={(e) => handleVarientChange(index, 'quantity', parseInt(e.target.value) || 0)}
                     helperText="Enter the product quantity."
+                  />
+                  <TextField
+                    label="Weight"
+                    type="number"
+                    fullWidth
+                    value={varient.weight || ''}
+                    onChange={(e) => handleVarientChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                    helperText="Enter the product weight."
                   />
                   <TextField
                     label="Price"
