@@ -154,7 +154,7 @@ const BuyerRecordDetails: React.FC = () => {
             Visit Date: {formatDate(record.visit_date)}
           </Typography>
           <Typography variant="h6" gutterBottom>
-            Total Amount: ${record.amount}
+            Total Amount: ₹{record.amount}
           </Typography>
 
           <Typography variant="h6" gutterBottom sx={{ marginTop: 2 }}>
@@ -184,7 +184,7 @@ const BuyerRecordDetails: React.FC = () => {
                     <TableCell>{varient.product_name}</TableCell>
                     <TableCell>{varient.quantity}</TableCell>
                     <TableCell>{varient.weight}</TableCell>
-                    <TableCell>${varient.price}</TableCell>
+                    <TableCell>₹{varient.price}</TableCell>
                   </TableRow>
                 ))
               ) : (
