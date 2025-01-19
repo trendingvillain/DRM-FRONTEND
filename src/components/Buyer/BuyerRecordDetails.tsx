@@ -43,16 +43,32 @@ interface BuyerRecord {
 const BuyerRecordDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
+  const [buyerInfo, setBuyerInfo] = useState<Buyer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
+  // Fetch buyer details
+  useEffect(() => {
+    const fetchBuyerInfo = async () => {
+      try {
+        const response = await axios.get<Buyer>(`https://drm-node.onrender.com/api/buyers/${id}`);
+        console.log('Buyer Info:', response.data);
+        setBuyerInfo(response.data);
+      } catch (err) {
+        console.error(err);
+        setError('Error loading buyer information.');
+      }
+    };
+
+    fetchBuyerInfo();
+  }, [id]);
+
+  // Fetch buyer records
   useEffect(() => {
     const fetchBuyerRecords = async () => {
       try {
-        const response = await axios.get<BuyerRecord[]>(
-          `${API_BASE_URL}/api/buyer-records/buyer/${id}`
-        );
+        const response = await axios.get<BuyerRecord[]>(`${API_BASE_URL}/api/buyer-records/buyer/${id}`);
         console.log('API Response:', response.data);
 
         let buyerRecords = response.data;
@@ -60,9 +76,7 @@ const BuyerRecordDetails: React.FC = () => {
         // Fetch variants for each buyer record
         const recordsWithVariants = await Promise.all(
           buyerRecords.map(async (record) => {
-            const variantResponse = await axios.get<Varient[]>(
-              `${API_BASE_URL}/api/varients/${record.id}`
-            );
+            const variantResponse = await axios.get<Varient[]>(`${API_BASE_URL}/api/varients/${record.id}`);
             return {
               ...record,
               varients: variantResponse.data,
@@ -141,9 +155,17 @@ const BuyerRecordDetails: React.FC = () => {
         Buyer Records
       </Typography>
 
-      <Typography variant="h5" gutterBottom>
-        Buyer ID: {id}
-      </Typography>
+      {/* Display Buyer Name and Amount */}
+      {buyerInfo && (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Buyer Name: {buyerInfo.name}
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            Buyer Amount: ₹  {buyerInfo.amount}
+          </Typography>
+        </>
+      )}
 
       {buyerRecords.map((record) => (
         <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }}>
