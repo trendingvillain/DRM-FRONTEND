@@ -21,7 +21,7 @@ interface Varient {
   product_name: string;
   quantity: number;
   price: number;
-  weight: number; // Added weight field
+  weight: number;
 }
 
 interface Buyer {
@@ -34,14 +34,14 @@ interface Buyer {
 
 interface BuyerRecord {
   id: number;
-  visit_date: string | null; // Allow null if visitDate can be absent
+  visit_date: string | null;
   amount: number;
   buyer: Buyer;
-  varients: Varient[]; // Variants are no longer nullable
+  varients: Varient[];
 }
 
 const BuyerRecordDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Fetch buyer ID from URL params
+  const { id } = useParams<{ id: string }>();
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +55,7 @@ const BuyerRecordDetails: React.FC = () => {
         );
         console.log('API Response:', response.data);
 
-        const buyerRecords = response.data;
+        let buyerRecords = response.data;
 
         // Fetch variants for each buyer record
         const recordsWithVariants = await Promise.all(
@@ -69,6 +69,9 @@ const BuyerRecordDetails: React.FC = () => {
             };
           })
         );
+
+        // Sort buyer records by ID in descending order
+        recordsWithVariants.sort((a, b) => b.id - a.id);
 
         setBuyerRecords(recordsWithVariants);
       } catch (err) {
@@ -87,27 +90,23 @@ const BuyerRecordDetails: React.FC = () => {
     setSnackbarOpen(false);
   };
 
-  // Helper function to format the date in DD/MM/YYYY
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) {
-      console.error('Visit date is undefined or null');
-      return 'No Date Available'; // Return a user-friendly message
+      return 'No Date Available';
     }
 
     const date = new Date(dateString);
 
-    // Check if the date is valid
     if (isNaN(date.getTime())) {
       console.error('Invalid date format:', dateString);
-      return 'Invalid Date'; // Return a fallback message for invalid dates
+      return 'Invalid Date';
     }
 
-    // Format the date as DD/MM/YYYY
-    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero if needed
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
 
-    return `${day}/${month}/${year}`; // Return formatted date as DD/MM/YYYY
+    return `${day}/${month}/${year}`;
   };
 
   if (loading) {
@@ -142,14 +141,12 @@ const BuyerRecordDetails: React.FC = () => {
         Buyer Records
       </Typography>
 
-      {/* Display Buyer Name at the top */}
       <Typography variant="h5" gutterBottom>
         Buyer ID: {id}
       </Typography>
 
       {buyerRecords.map((record) => (
         <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }}>
-          {/* Record Information */}
           <Typography variant="h6" gutterBottom>
             Record ID: {record.id}
           </Typography>
@@ -160,7 +157,6 @@ const BuyerRecordDetails: React.FC = () => {
             Total Amount: ${record.amount}
           </Typography>
 
-          {/* Display Products Purchased */}
           <Typography variant="h6" gutterBottom sx={{ marginTop: 2 }}>
             Products:
           </Typography>
