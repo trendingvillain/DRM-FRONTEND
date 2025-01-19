@@ -21,6 +21,7 @@ interface Varient {
   product_name: string;
   quantity: number;
   price: number;
+  weight: number; // Added weight field
 }
 
 interface Buyer {
@@ -52,7 +53,7 @@ const BuyerRecordDetails: React.FC = () => {
         const response = await axios.get<BuyerRecord[]>(
           `${API_BASE_URL}/api/buyer-records/buyer/${id}`
         );
-        console.log('API Response:', response.data); // Log the response to inspect visitDate
+        console.log('API Response:', response.data);
 
         const buyerRecords = response.data;
 
@@ -153,7 +154,7 @@ const BuyerRecordDetails: React.FC = () => {
             Record ID: {record.id}
           </Typography>
           <Typography variant="h6" gutterBottom>
-            Visit Date: {formatDate(record.visit_date)} {/* Updated formatting here */}
+            Visit Date: {formatDate(record.visit_date)}
           </Typography>
           <Typography variant="h6" gutterBottom>
             Total Amount: ${record.amount}
@@ -173,6 +174,9 @@ const BuyerRecordDetails: React.FC = () => {
                   <strong>Quantity</strong>
                 </TableCell>
                 <TableCell>
+                  <strong>Weight</strong>
+                </TableCell>
+                <TableCell>
                   <strong>Price</strong>
                 </TableCell>
               </TableRow>
@@ -183,12 +187,13 @@ const BuyerRecordDetails: React.FC = () => {
                   <TableRow key={varient.id}>
                     <TableCell>{varient.product_name}</TableCell>
                     <TableCell>{varient.quantity}</TableCell>
+                    <TableCell>{varient.weight}</TableCell>
                     <TableCell>${varient.price}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} align="center">
+                  <TableCell colSpan={4} align="center">
                     No products available.
                   </TableCell>
                 </TableRow>
