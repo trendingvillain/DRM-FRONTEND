@@ -47,7 +47,7 @@ const LandAvailable: React.FC = () => {
   const navigate = useNavigate();
 
   // Predefined variant options for the Select dropdown
-  const variantOptions = ['Variant A', 'Varient B', 'Varient C', 'Varient D', 'Varient E'];
+  const variantOptions = ['நாடு', 'கோழிக்குடு',  'கற்பூரவள்ளி',   'சக்கை', 'காசாளி'];
 
   useEffect(() => {
     const fetchData = async () => {
