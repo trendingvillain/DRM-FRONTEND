@@ -17,12 +17,11 @@ import {
 import API_BASE_URL from '../../config/apiConfig';
 
 const variants = [
-  { id: 1, name: 'Variant A' },
-  { id: 2, name: 'Variant B' },
-  { id: 3, name: 'Variant C' },
-  { id: 4, name: 'Variant D' },
-  { id: 5, name: 'Variant E' },
-  { id: 6, name: 'Variant F' },
+  { id: 1, name: 'நாடு' },
+  { id: 2, name: 'கோழிக்குடு' },
+  { id: 3, name: 'கற்பூரவள்ளி' },
+  { id: 4, name: 'சக்கை' },
+  { id: 5, name: 'காசாளி' }
 ];
 
 const AddLandAvailable: React.FC = () => {
