@@ -28,13 +28,13 @@ const FormContainer = styled(Paper)(({ theme }) => ({
 }));
 
 const productNames = [
-  { id: 1, name: 'Variant A' },
-  { id: 2, name: 'Variant B' },
-  { id: 3, name: 'Variant C' },
-  { id: 4, name: 'Variant D' },
-  { id: 5, name: 'Variant E' },
-  { id: 6, name: 'Variant F' },
+  { id: 1, name: 'நாடு' },
+  { id: 2, name: 'கோழிக்குடு' },
+  { id: 3, name: 'கற்பூரவள்ளி' },
+  { id: 4, name: 'சக்கை' },
+  { id: 5, name: 'காசாளி' }
 ];
+
 
 const BuyerRecordForm: React.FC = () => {
   const [buyers, setBuyers] = useState<any[]>([]);
