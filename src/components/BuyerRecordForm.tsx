@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -47,6 +48,9 @@ const BuyerRecordForm: React.FC = () => {
     type: null,
     message: '',
   });
+
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchBuyers = async () => {
@@ -103,6 +107,8 @@ const BuyerRecordForm: React.FC = () => {
       })),
     };
 
+    console.log('Submitting formData:', formData); // Debugging step
+
     try {
       const response = await axios.post(`${API_BASE_URL}/api/buyer-records`, formData);
       if (response.status === 201) {
@@ -111,6 +117,7 @@ const BuyerRecordForm: React.FC = () => {
         setVisitDate('');
         setAmount(0);
         setVarients([{ productName: 1, quantity: 0, price: 0, weight: 0 }]);
+        navigate('/');
       }
     } catch (error) {
       setAlert({ type: 'error', message: 'Failed to create buyer record. Please try again.' });
