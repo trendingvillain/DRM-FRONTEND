@@ -134,7 +134,12 @@ const BuyerRecordDetails: React.FC = () => {
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom>Buyer Records</Typography>
-      {buyerInfo && <Typography variant="h6">Buyer Name: {buyerInfo.name}</Typography>}
+      {buyerInfo && (
+        <>
+          <Typography variant="h6">Buyer Name: {buyerInfo.name}</Typography>
+          <Typography variant="h6">இருப்பு + வரவு: ₹ {buyerInfo.amount}</Typography>
+        </>
+      )}
       {buyerRecords.map((record) => (
         <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }} id={`record-${record.id}`}>
           <img src={recordIcon} alt="Record Icon" style={{ width: '100%' }} />
@@ -142,27 +147,58 @@ const BuyerRecordDetails: React.FC = () => {
             <Typography variant="h6">No: {record.id}</Typography>
             <Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
           </Box>
-          <Table>
+
+          {/* Displaying the buyer name as per your friend's code */}
+          {buyerInfo && (
+            <>
+              <Typography variant="h6" sx={{ marginLeft: 10, marginTop: 3 }}>திரு.{buyerInfo.name}</Typography>
+            </>
+          )}
+
+          <Table sx={{ marginLeft: 2, marginRight: 4, marginTop: 3 }}>
             <TableHead>
               <TableRow>
-                <TableCell>Product Name</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Weight</TableCell>
-                <TableCell>Price</TableCell>
+                <TableCell><strong>Product Name</strong></TableCell>
+                <TableCell><strong>Quantity</strong></TableCell>
+                <TableCell><strong>Weight</strong></TableCell>
+                <TableCell><strong>Price</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {record.varients.map((varient) => (
-                <TableRow key={varient.id}>
-                  <TableCell>{varient.product_name}</TableCell>
-                  <TableCell>{varient.quantity}</TableCell>
-                  <TableCell>{varient.weight} kg</TableCell>
-                  <TableCell>₹{varient.price}</TableCell>
+              {record.varients.length > 0 ? (
+                record.varients.map((varient) => (
+                  <TableRow key={varient.id}>
+                    <TableCell>{varient.product_name}</TableCell>
+                    <TableCell>{varient.quantity}</TableCell>
+                    <TableCell>{varient.weight} kg</TableCell>
+                    <TableCell>₹{varient.price}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">No products available.</TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
-          <Button variant="contained" color="primary" onClick={() => downloadPNG(record.id)}>Download Record</Button>
+
+          {/* Displaying the total and balance as per your friend's code */}
+          <Typography variant="h6" sx={{ marginLeft: '70%', fontSize: 14 }}>மொத்தம்: ₹{record.amount}</Typography>
+
+          {/* Adding the buyer balance */}
+          {buyerInfo && (
+            <>
+              <Typography variant="h6" sx={{ marginLeft: '65%', fontSize: 14 }}>
+                இருப்பு + வரவு: ₹ {buyerInfo.amount}
+              </Typography>
+            </>
+          )}
+
+          <Box sx={{ marginTop: 2, textAlign: 'right' }}>
+            <Button variant="contained" color="primary" onClick={() => downloadPNG(record.id)}>
+              Download Record as PNG
+            </Button>
+          </Box>
         </Paper>
       ))}
     </Box>
