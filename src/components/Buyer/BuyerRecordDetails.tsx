@@ -66,7 +66,7 @@ const BuyerRecordDetails: React.FC = () => {
         const response = await axios.get<BuyerRecord[]>(`${API_BASE_URL}/api/buyer-records/buyer/${id}`);
         const recordsWithVariants = await Promise.all(
           response.data.map(async (record) => {
-            const variantResponse = await axios.get<Variant[]>(`${API_BASE_URL}/api/variants/${record.id}`);
+            const variantResponse = await axios.get<Variant[]>(`${API_BASE_URL}/api/varients/${record.id}`);
             return { ...record, varients: variantResponse.data };
           })
         );
