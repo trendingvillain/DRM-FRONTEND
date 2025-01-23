@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import recordIcon from './../../banner.png';
 import axios from 'axios';
 import {
   Typography,
@@ -13,32 +14,10 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Button,
 } from '@mui/material';
+import html2canvas from 'html2canvas';
 import API_BASE_URL from '../../config/apiConfig';
-
-interface Varient {
-  id: number;
-  product_name: string;
-  quantity: number;
-  price: number;
-  weight: number;
-}
-
-interface Buyer {
-  id: number;
-  name: string;
-  location: string;
-  amount: number;
-  createdDate: string;
-}
-
-interface BuyerRecord {
-  id: number;
-  visit_date: string | null;
-  amount: number;
-  buyer: Buyer;
-  varients: Varient[];
-}
 
 const BuyerRecordDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,55 +27,37 @@ const BuyerRecordDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Fetch buyer details
   useEffect(() => {
     const fetchBuyerInfo = async () => {
       try {
-        const response = await axios.get<Buyer>(`https://drm-node.onrender.com/api/buyers/${id}`);
-        console.log('Buyer Info:', response.data);
+        const response = await axios.get<Buyer>(`${API_BASE_URL}/api/buyers/${id}`);
         setBuyerInfo(response.data);
       } catch (err) {
-        console.error(err);
         setError('Error loading buyer information.');
       }
     };
-
     fetchBuyerInfo();
   }, [id]);
 
-  // Fetch buyer records
   useEffect(() => {
     const fetchBuyerRecords = async () => {
       try {
         const response = await axios.get<BuyerRecord[]>(`${API_BASE_URL}/api/buyer-records/buyer/${id}`);
-        console.log('API Response:', response.data);
-
-        let buyerRecords = response.data;
-
-        // Fetch variants for each buyer record
         const recordsWithVariants = await Promise.all(
-          buyerRecords.map(async (record) => {
+          response.data.map(async (record) => {
             const variantResponse = await axios.get<Varient[]>(`${API_BASE_URL}/api/varients/${record.id}`);
-            return {
-              ...record,
-              varients: variantResponse.data,
-            };
+            return { ...record, varients: variantResponse.data };
           })
         );
-
-        // Sort buyer records by ID in descending order
         recordsWithVariants.sort((a, b) => b.id - a.id);
-
         setBuyerRecords(recordsWithVariants);
       } catch (err) {
-        console.error(err);
         setError('Error loading buyer record data.');
       } finally {
         setLoading(false);
         setSnackbarOpen(true);
       }
     };
-
     fetchBuyerRecords();
   }, [id]);
 
@@ -105,22 +66,35 @@ const BuyerRecordDetails: React.FC = () => {
   };
 
   const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) {
-      return 'No Date Available';
-    }
-
+    if (!dateString) return 'No Date Available';
     const date = new Date(dateString);
+    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+  };
 
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date format:', dateString);
-      return 'Invalid Date';
+  const downloadPNG = async (recordId: number) => {
+    const element = document.getElementById(`record-${recordId}`);
+    if (!element) return;
+
+    const button = element.querySelector('button');
+    if (button) button.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        scale: 2,
+      });
+      if (button) button.style.display = 'block';
+      const imgData = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = imgData;
+      link.download = `buyer_record_${recordId}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error capturing image:', error);
+      if (button) button.style.display = 'block';
     }
-
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
   };
 
   if (loading) {
@@ -141,71 +115,50 @@ const BuyerRecordDetails: React.FC = () => {
     );
   }
 
-  if (buyerRecords.length === 0) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        No buyer record data available.
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom>
         Buyer Records
       </Typography>
 
-      {/* Display Buyer Name and Amount */}
       {buyerInfo && (
         <>
-          <Typography variant="h6" gutterBottom>
-            Buyer Name: {buyerInfo.name}
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            Buyer Amount: ₹  {buyerInfo.amount}
-          </Typography>
+          <Typography variant="h6">Buyer Name: {buyerInfo.name}</Typography>
+          <Typography variant="h6">இருப்பு + வரவு: ₹ {buyerInfo.amount}</Typography>
         </>
       )}
 
       {buyerRecords.map((record) => (
-        <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Record ID: {record.id}
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            Visit Date: {formatDate(record.visit_date)}
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            Total Amount: ₹{record.amount}
-          </Typography>
+        <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }} id={`record-${record.id}`}>
+          <img src={recordIcon} alt="Record Icon" style={{ width: '100%' }} />
 
-          <Typography variant="h6" gutterBottom sx={{ marginTop: 2 }}>
-            Products:
-          </Typography>
-          <Table>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginLeft: 5, marginRight: 5, color:'#0fc33b' }}>
+            <Typography variant="h6">No: {record.id}</Typography>
+  <          Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
+          </Box>
+
+
+          {buyerInfo && (
+        <>
+          <Typography variant="h6" sx={{marginLeft:10, marginTop:3}}>திரு.{buyerInfo.name}</Typography>
+        </>
+      )}
+          <Table sx={{marginLeft:2, marginRight: 4, marginTop:3}}>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  <strong>Product Name</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Quantity</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Weight</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Price</strong>
-                </TableCell>
+                <TableCell><strong>Product Name</strong></TableCell>
+                <TableCell><strong>Quantity</strong></TableCell>
+                <TableCell><strong>Weight</strong></TableCell>
+                <TableCell><strong>Price</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {record.varients && record.varients.length > 0 ? (
+              {record.varients.length > 0 ? (
                 record.varients.map((varient) => (
                   <TableRow key={varient.id}>
                     <TableCell>{varient.product_name}</TableCell>
                     <TableCell>{varient.quantity}</TableCell>
-                    <TableCell>{varient.weight}</TableCell>
+                    <TableCell>{varient.weight} kg</TableCell>
                     <TableCell>₹{varient.price}</TableCell>
                   </TableRow>
                 ))
@@ -218,6 +171,19 @@ const BuyerRecordDetails: React.FC = () => {
               )}
             </TableBody>
           </Table>
+          <Typography variant="h6" sx={{ marginLeft: '70%', fontSize: 14 }}>மொத்தம்: ₹{record.amount}</Typography>
+          {buyerInfo && (
+        <>
+
+          <Typography variant="h6" sx={{ marginLeft: '65%', fontSize: 14 }}>இருப்பு + வரவு: ₹ {buyerInfo.amount}</Typography>
+        </>
+      )}
+
+          <Box sx={{ marginTop: 2, textAlign: 'right' }}>
+            <Button variant="contained" color="primary" onClick={() => downloadPNG(record.id)}>
+              Download Record as PNG
+            </Button>
+          </Box>
         </Paper>
       ))}
     </Box>
