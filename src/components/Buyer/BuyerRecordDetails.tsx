@@ -19,6 +19,27 @@ import {
 import html2canvas from 'html2canvas';
 import API_BASE_URL from '../../config/apiConfig';
 
+interface Buyer {
+  id: number;
+  name: string;
+  amount: number;
+}
+
+interface BuyerRecord {
+  id: number;
+  visit_date: string;
+  amount: number;
+  varients: Variant[];
+}
+
+interface Variant {
+  id: number;
+  product_name: string;
+  quantity: number;
+  weight: number;
+  price: number;
+}
+
 const BuyerRecordDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [buyerRecords, setBuyerRecords] = useState<BuyerRecord[]>([]);
@@ -45,7 +66,7 @@ const BuyerRecordDetails: React.FC = () => {
         const response = await axios.get<BuyerRecord[]>(`${API_BASE_URL}/api/buyer-records/buyer/${id}`);
         const recordsWithVariants = await Promise.all(
           response.data.map(async (record) => {
-            const variantResponse = await axios.get<Varient[]>(`${API_BASE_URL}/api/varients/${record.id}`);
+            const variantResponse = await axios.get<Variant[]>(`${API_BASE_URL}/api/varients/${record.id}`);
             return { ...record, varients: variantResponse.data };
           })
         );
@@ -61,9 +82,7 @@ const BuyerRecordDetails: React.FC = () => {
     fetchBuyerRecords();
   }, [id]);
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
+  const handleSnackbarClose = () => setSnackbarOpen(false);
 
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return 'No Date Available';
@@ -79,10 +98,7 @@ const BuyerRecordDetails: React.FC = () => {
     if (button) button.style.display = 'none';
 
     try {
-      const canvas = await html2canvas(element, {
-        useCORS: true,
-        scale: 2,
-      });
+      const canvas = await html2canvas(element, { useCORS: true, scale: 2 });
       if (button) button.style.display = 'block';
       const imgData = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -117,33 +133,29 @@ const BuyerRecordDetails: React.FC = () => {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Buyer Records
-      </Typography>
-
+      <Typography variant="h4" gutterBottom>Buyer Records</Typography>
       {buyerInfo && (
         <>
           <Typography variant="h6">Buyer Name: {buyerInfo.name}</Typography>
           <Typography variant="h6">இருப்பு + வரவு: ₹ {buyerInfo.amount}</Typography>
         </>
       )}
-
       {buyerRecords.map((record) => (
         <Paper key={record.id} sx={{ marginTop: 3, padding: 2 }} id={`record-${record.id}`}>
           <img src={recordIcon} alt="Record Icon" style={{ width: '100%' }} />
-
           <Box sx={{ display: 'flex', justifyContent: 'space-between', marginLeft: 5, marginRight: 5, color:'#0fc33b' }}>
             <Typography variant="h6">No: {record.id}</Typography>
-  <          Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
+            <Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
           </Box>
 
-
+          {/* Displaying the buyer name as per your friend's code */}
           {buyerInfo && (
-        <>
-          <Typography variant="h6" sx={{marginLeft:10, marginTop:3}}>திரு.{buyerInfo.name}</Typography>
-        </>
-      )}
-          <Table sx={{marginLeft:2, marginRight: 4, marginTop:3}}>
+            <>
+              <Typography variant="h6" sx={{ marginLeft: 10, marginTop: 3 }}>திரு.{buyerInfo.name}</Typography>
+            </>
+          )}
+
+          <Table sx={{ marginLeft: 2, marginRight: 4, marginTop: 3 }}>
             <TableHead>
               <TableRow>
                 <TableCell><strong>Product Name</strong></TableCell>
@@ -164,20 +176,23 @@ const BuyerRecordDetails: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    No products available.
-                  </TableCell>
+                  <TableCell colSpan={4} align="center">No products available.</TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-          <Typography variant="h6" sx={{ marginLeft: '70%', fontSize: 14 }}>மொத்தம்: ₹{record.amount}</Typography>
-          {buyerInfo && (
-        <>
 
-          <Typography variant="h6" sx={{ marginLeft: '65%', fontSize: 14 }}>இருப்பு + வரவு: ₹ {buyerInfo.amount}</Typography>
-        </>
-      )}
+          {/* Displaying the total and balance as per your friend's code */}
+          <Typography variant="h6" sx={{ marginLeft: '70%', fontSize: 14 }}>மொத்தம்: ₹{record.amount}</Typography>
+
+          {/* Adding the buyer balance */}
+          {buyerInfo && (
+            <>
+              <Typography variant="h6" sx={{ marginLeft: '65%', fontSize: 14 }}>
+                இருப்பு + வரவு: ₹ {buyerInfo.amount}
+              </Typography>
+            </>
+          )}
 
           <Box sx={{ marginTop: 2, textAlign: 'right' }}>
             <Button variant="contained" color="primary" onClick={() => downloadPNG(record.id)}>
