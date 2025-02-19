@@ -29,6 +29,7 @@ interface Buyer {
   name: string;
   amount: number;
   location: string;
+  phonenumber: number;
   createdDate: string;
 }
 
@@ -37,6 +38,7 @@ const Buyer: React.FC = () => {
   const [filteredBuyers, setFilteredBuyers] = useState<Buyer[]>([]);
   const [searchName, setSearchName] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const [searchphoneNumber, setPhoneNumber] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedBuyer, setSelectedBuyer] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -78,6 +80,12 @@ const Buyer: React.FC = () => {
     setSearchLocation(value);
     setFilteredBuyers(buyers.filter((buyer) => buyer.location.toLowerCase().includes(value)));
   };
+  const handleSearchPhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setPhoneNumber(value);
+
+    setFilteredBuyers(buyers.filter((buyer) => buyer.phonenumber && buyer.phonenumber.includes(value)));
+  }
 
   return (
     <Box sx={{ padding: 3 }}>
@@ -111,6 +119,18 @@ const Buyer: React.FC = () => {
             boxShadow: 1,
           }}
         />
+        <TextField
+          label="Search by Phone number"
+          variant="outlined"
+          value={searchphoneNumber}
+          onChange={handleSearchPhoneChange}
+          sx={{
+            width: { xs: '100%', sm: '40%' },
+            backgroundColor: '#fff',
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        />
       </Box>
 
       {/* Table - Mobile Friendly */}
@@ -130,6 +150,7 @@ const Buyer: React.FC = () => {
               <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Name</TableCell>
               <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Amount</TableCell>
               <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Location</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Phone Number</TableCell>
               <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -140,6 +161,7 @@ const Buyer: React.FC = () => {
                 <TableCell>{buyer.name}</TableCell>
                 <TableCell>{buyer.amount}</TableCell>
                 <TableCell>{buyer.location}</TableCell>
+                <TableCell>{buyer.phonenumber}</TableCell>
                 <TableCell>
                   <IconButton aria-label="more" onClick={(event) => handleMenuClick(event, buyer.id)}>
                     <MoreVertIcon />

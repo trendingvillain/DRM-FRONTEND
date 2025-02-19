@@ -108,13 +108,7 @@ const LandAvailable: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Land Available Records
       </Typography>
-      <Button
-        onClick={handleBack}
-        variant="outlined"
-        sx={{ marginBottom: '10px' }}
-      >
-        Back
-      </Button>
+      
 
       {/* Search Section */}
       <Box sx={{ display: 'flex', gap: 2, marginBottom: 3 }}>
@@ -164,12 +158,12 @@ const LandAvailable: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell><strong>Name</strong></TableCell>
-              <TableCell><strong>Place</strong></TableCell>
-              <TableCell><strong>Area</strong></TableCell>
-              <TableCell><strong>Varient</strong></TableCell>
-              <TableCell><strong>No. of Trees</strong></TableCell>
-              <TableCell><strong>Actions</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Name</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Place</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Area</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Varient</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>No. of Trees</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -17,37 +17,52 @@ const AddLandOwner: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate(); // For navigation after adding the land owner
-  const [name, setName] = useState(''); // Store name input
-  const [amount, setAmount] = useState(0); // Store amount input
-  const [location, setLocation] = useState(''); // Store location input
-  const [loading, setLoading] = useState(false); // Track loading state
+
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState(0);
+  const [location, setLocation] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Handle phone number validation
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+    if (input.length > 10) return; // Limit to 10 digits
+
+    setPhoneNumber(input);
+
+    if (input.length !== 10) {
+      setPhoneError('Phone number must be exactly 10 digits.');
+    } else {
+      setPhoneError('');
+    }
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Show loading state while submitting
+    if (phoneError) return; // Prevent submission if phone validation fails
+
     setLoading(true);
     try {
-      // Send POST request to add a new land owner
       await axios.post(`${API_BASE_URL}/api/land-owners`, {
         name,
         amount,
         location,
+        phoneNumber: `${phoneNumber}`, // Ensure +91 prefix
       });
 
-      // After successful submission, navigate back to the land owners list
-      navigate('/landowners');
+      navigate('/landowners'); // Redirect after success
     } catch (error) {
       console.error('Error adding land owner:', error);
     } finally {
-      // Reset loading state
       setLoading(false);
     }
   };
 
   return (
     <Container>
-      {/* Form Container */}
       <Paper
         elevation={3}
         sx={{
@@ -58,7 +73,6 @@ const AddLandOwner: React.FC = () => {
           marginTop: isMobile ? 2 : 5,
         }}
       >
-        {/* Header */}
         <Typography
           variant={isMobile ? 'h5' : 'h4'}
           gutterBottom
@@ -72,7 +86,6 @@ const AddLandOwner: React.FC = () => {
           Add Land Owner
         </Typography>
 
-        {/* Form Fields */}
         <Box
           component="form"
           onSubmit={handleSubmit}
@@ -82,7 +95,6 @@ const AddLandOwner: React.FC = () => {
             gap: 2,
           }}
         >
-          {/* Name Input */}
           <TextField
             label="Name"
             variant="outlined"
@@ -93,7 +105,6 @@ const AddLandOwner: React.FC = () => {
             autoFocus
           />
 
-          {/* Amount Input */}
           <TextField
             label="Amount"
             variant="outlined"
@@ -104,7 +115,6 @@ const AddLandOwner: React.FC = () => {
             required
           />
 
-          {/* Location Input */}
           <TextField
             label="Location"
             variant="outlined"
@@ -114,7 +124,19 @@ const AddLandOwner: React.FC = () => {
             required
           />
 
-          {/* Submit Button */}
+          {/* Phone Number Input */}
+          <TextField
+            label="Phone Number"
+            variant="outlined"
+            fullWidth
+            value={phoneNumber}
+            onChange={handlePhoneChange}
+            required
+            error={!!phoneError}
+            helperText={phoneError}
+            inputProps={{ maxLength: 10 }}
+          />
+
           <Button
             variant="contained"
             color="primary"

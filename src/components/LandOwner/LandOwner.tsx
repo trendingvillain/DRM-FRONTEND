@@ -32,6 +32,7 @@ interface LandOwner {
   amount: number;
   location: string;
   createdDate: string;
+  phonenumber: number;
 }
 
 const LandOwner: React.FC = () => {
@@ -41,6 +42,7 @@ const LandOwner: React.FC = () => {
   const [filteredLandOwners, setFilteredLandOwners] = useState<LandOwner[]>([]);
   const [searchName, setSearchName] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
+  const [searchPhoneNumber, setSearchPhoneNumber] = useState('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedLandOwner, setSelectedLandOwner] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -58,46 +60,33 @@ const LandOwner: React.FC = () => {
       });
   }, []);
 
-  // Handle navigation to the land owner record details page
-  const handleViewDetails = (id: number) => {
-    navigate(`/landowner-record-details/${id}`);
-  };
-
-  // Handle navigation to the form for editing a land owner
-  const handleEditLandOwner = (id: number) => {
-    navigate(`/landowner-form/${id}`);
-  };
-
-  // Handle opening of the menu
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, landOwnerId: number) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedLandOwner(landOwnerId);
-  };
-
-  // Handle closing of the menu
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedLandOwner(null);
-  };
-
   // Handle search for name input change
   const handleSearchNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = event.target.value.toLowerCase();
     setSearchName(value);
-    const filtered = landOwners.filter((landOwner) =>
-      landOwner.name.toLowerCase().includes(value.toLowerCase())
+    setFilteredLandOwners(
+      landOwners.filter((landOwner) => landOwner.name.toLowerCase().includes(value))
     );
-    setFilteredLandOwners(filtered);
   };
 
   // Handle search for location input change
   const handleSearchLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = event.target.value.toLowerCase();
     setSearchLocation(value);
-    const filtered = landOwners.filter((landOwner) =>
-      landOwner.location.toLowerCase().includes(value.toLowerCase())
+    setFilteredLandOwners(
+      landOwners.filter((landOwner) => landOwner.location.toLowerCase().includes(value))
     );
-    setFilteredLandOwners(filtered);
+  };
+
+  // Handle search for phone number input change
+  const handleSearchPhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchPhoneNumber(value);
+    setFilteredLandOwners(
+      landOwners.filter((landOwner) =>
+        String(landOwner.phonenumber).includes(value)
+      )
+    );
   };
 
   const handleBack = () => {
@@ -120,21 +109,9 @@ const LandOwner: React.FC = () => {
         Land Owner Details
       </Typography>
 
-      {/* Back Button */}
-      <Button
-        onClick={handleBack}
-        variant="outlined"
-        sx={{
-          marginBottom: 2,
-          width: isMobile ? '100%' : 'auto',
-        }}
-      >
-        Back
-      </Button>
-
       {/* Search Fields */}
       <Grid container spacing={2} sx={{ marginBottom: 3 }}>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Search by Name"
             variant="outlined"
@@ -143,7 +120,7 @@ const LandOwner: React.FC = () => {
             onChange={handleSearchNameChange}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={4}>
           <TextField
             label="Search by Location"
             variant="outlined"
@@ -152,63 +129,41 @@ const LandOwner: React.FC = () => {
             onChange={handleSearchLocationChange}
           />
         </Grid>
+        <Grid item xs={12} sm={4}>
+          <TextField
+            label="Search by Phone Number"
+            variant="outlined"
+            fullWidth
+            value={searchPhoneNumber}
+            onChange={handleSearchPhoneChange}
+          />
+        </Grid>
       </Grid>
 
       {/* Table Container */}
       <TableContainer
         component={Paper}
-        sx={{
-          maxHeight: isMobile ? '300px' : '400px',
-          overflowY: 'auto',
-          marginBottom: 3,
-        }}
+        sx={{ maxHeight: isMobile ? '300px' : '400px', overflowY: 'auto', marginBottom: 3 }}
       >
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell
-                sx={{
-                  backgroundColor: '#e0f7fa',
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '0.8rem' : '1rem',
-                }}
-              >
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
                 ID
               </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: '#e0f7fa',
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '0.8rem' : '1rem',
-                }}
-              >
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
                 Name
               </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: '#e0f7fa',
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '0.8rem' : '1rem',
-                }}
-              >
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
                 Amount
               </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: '#e0f7fa',
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '0.8rem' : '1rem',
-                }}
-              >
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
                 Location
               </TableCell>
-              <TableCell
-                sx={{
-                  backgroundColor: '#e0f7fa',
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '0.8rem' : '1rem',
-                }}
-              >
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
+                Phone Number
+              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
                 Actions
               </TableCell>
             </TableRow>
@@ -221,30 +176,34 @@ const LandOwner: React.FC = () => {
                   <TableCell>{landOwner.name}</TableCell>
                   <TableCell>{landOwner.amount}</TableCell>
                   <TableCell>{landOwner.location}</TableCell>
+                  <TableCell>{landOwner.phonenumber}</TableCell>
                   <TableCell>
                     <IconButton
                       aria-label="more"
-                      onClick={(event) => handleMenuClick(event, landOwner.id)}
+                      onClick={(event) => {
+                        setAnchorEl(event.currentTarget);
+                        setSelectedLandOwner(landOwner.id);
+                      }}
                     >
                       <MoreVertIcon />
                     </IconButton>
                     <Menu
                       anchorEl={anchorEl}
                       open={Boolean(anchorEl) && selectedLandOwner === landOwner.id}
-                      onClose={handleMenuClose}
+                      onClose={() => setAnchorEl(null)}
                     >
                       <MenuItem
                         onClick={() => {
-                          handleViewDetails(landOwner.id);
-                          handleMenuClose();
+                          navigate(`/landowner-record-details/${landOwner.id}`);
+                          setAnchorEl(null);
                         }}
                       >
                         Land Owner Record
                       </MenuItem>
                       <MenuItem
                         onClick={() => {
-                          handleEditLandOwner(landOwner.id);
-                          handleMenuClose();
+                          navigate(`/landowner-form/${landOwner.id}`);
+                          setAnchorEl(null);
                         }}
                       >
                         Edit
@@ -255,7 +214,7 @@ const LandOwner: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No land owners found.
                 </TableCell>
               </TableRow>
@@ -268,11 +227,7 @@ const LandOwner: React.FC = () => {
       <Fab
         color="primary"
         aria-label="add"
-        sx={{
-          position: 'fixed',
-          bottom: isMobile ? 10 : 16,
-          right: isMobile ? 10 : 16,
-        }}
+        sx={{ position: 'fixed', bottom: 16, right: 16 }}
         onClick={() => navigate('/landowner-form')}
       >
         <AddIcon />
