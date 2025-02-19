@@ -11,18 +11,19 @@ import {
   TableCell,
   Paper,
   Fab,
-  Button,
   Menu,
   MenuItem,
   IconButton,
   TextField,
+  useMediaQuery,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 import API_BASE_URL from '../../config/apiConfig';
 
-// Define the structure of a Buyer object
+// Define Buyer interface
 interface Buyer {
   id: number;
   name: string;
@@ -32,132 +33,114 @@ interface Buyer {
 }
 
 const Buyer: React.FC = () => {
-  const [buyers, setBuyers] = useState<Buyer[]>([]); // Stores all buyer data
-  const [filteredBuyers, setFilteredBuyers] = useState<Buyer[]>([]); // Stores filtered buyer data based on search
-  const [searchName, setSearchName] = useState(''); // The search input for name
-  const [searchLocation, setSearchLocation] = useState(''); // The search input for location
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // For Menu positioning
-  const [selectedBuyer, setSelectedBuyer] = useState<number | null>(null); // Store selected buyer id
-  const navigate = useNavigate(); // To navigate to other pages
+  const [buyers, setBuyers] = useState<Buyer[]>([]);
+  const [filteredBuyers, setFilteredBuyers] = useState<Buyer[]>([]);
+  const [searchName, setSearchName] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedBuyer, setSelectedBuyer] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Detects mobile screens
 
-  // Fetch buyer details from the API when the component mounts
   useEffect(() => {
     axios
       .get(`${API_BASE_URL}/api/buyers`)
       .then((response) => {
-        setBuyers(response.data); // Store the fetched buyers data
-        setFilteredBuyers(response.data); // Set initial filtered buyers data
+        setBuyers(response.data);
+        setFilteredBuyers(response.data);
       })
-      .catch((error) => {
-        console.error('Error fetching buyers:', error); // Log errors if any
-      });
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
+      .catch((error) => console.error('Error fetching buyers:', error));
+  }, []);
 
-  // Handle navigation to the buyer record details page
-  const handleViewDetails = (id: number) => {
-    navigate(`/buyer-record-details/${id}`);
-  };
+  const handleViewDetails = (id: number) => navigate(`/buyer-record-details/${id}`);
+  const handleFabClick = () => navigate('/buyer-form');
+  const handleViewIncome = (buyerId: number) => navigate(`/buyer-income/${buyerId}`);
 
-  // Handle navigation to the form for adding a new buyer
-  const handleFabClick = () => {
-    navigate('/buyer-form');
-  };
-
-  // Handle navigation to buyer income records
-  const handleViewIncome = (buyerId: number) => {
-    navigate(`/buyer-income/${buyerId}`);
-  };
-
-  // Handle opening of the menu
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, buyerId: number) => {
     setAnchorEl(event.currentTarget);
-    setSelectedBuyer(buyerId); // Set the selected buyer id
+    setSelectedBuyer(buyerId);
   };
 
-  // Handle closing of the menu
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedBuyer(null);
   };
 
-  // Handle search for name input change
   const handleSearchNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = event.target.value.toLowerCase();
     setSearchName(value);
-
-    // Filter buyers based on name
-    const filtered = buyers.filter((buyer) =>
-      buyer.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredBuyers(filtered); // Update the filtered list of buyers
+    setFilteredBuyers(buyers.filter((buyer) => buyer.name.toLowerCase().includes(value)));
   };
 
-  // Handle search for location input change
   const handleSearchLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
+    const value = event.target.value.toLowerCase();
     setSearchLocation(value);
-
-    // Filter buyers based on location
-    const filtered = buyers.filter((buyer) =>
-      buyer.location.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredBuyers(filtered); // Update the filtered list of buyers
-  };
-
-  const handleBack = () => {
-    navigate('/'); // Navigate to the home route
+    setFilteredBuyers(buyers.filter((buyer) => buyer.location.toLowerCase().includes(value)));
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ padding: 3 }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
         Buyer Details
       </Typography>
-      <Button onClick={handleBack} variant="outlined" sx={{ marginBottom: '10px' }}>
-        Back
-      </Button>
 
-      {/* Search by Name */}
-      <TextField
-        label="Search by Name"
-        variant="outlined"
-        fullWidth
-        value={searchName}
-        onChange={handleSearchNameChange}
-        sx={{ marginBottom: '10px' }}
-      />
+      {/* Search Fields */}
+      <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
+        <TextField
+          label="Search by Name"
+          variant="outlined"
+          value={searchName}
+          onChange={handleSearchNameChange}
+          sx={{
+            width: { xs: '100%', sm: '40%' },
+            backgroundColor: '#fff',
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        />
+        <TextField
+          label="Search by Location"
+          variant="outlined"
+          value={searchLocation}
+          onChange={handleSearchLocationChange}
+          sx={{
+            width: { xs: '100%', sm: '40%' },
+            backgroundColor: '#fff',
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        />
+      </Box>
 
-      {/* Search by Location */}
-      <TextField
-        label="Search by Location"
-        variant="outlined"
-        fullWidth
-        value={searchLocation}
-        onChange={handleSearchLocationChange}
-        sx={{ marginBottom: '20px' }}
-      />
-
-      <TableContainer component={Paper} style={{ marginTop: '30px', maxHeight: '350px' }}>
-        <Table stickyHeader>
+      {/* Table - Mobile Friendly */}
+      <TableContainer
+        component={Paper}
+        sx={{
+          marginTop: 3,
+          borderRadius: 2,
+          boxShadow: 3,
+          overflowX: isMobile ? 'scroll' : 'visible',
+        }}
+      >
+        <Table>
           <TableHead>
-            <TableRow>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>ID</TableCell>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>Name</TableCell>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>Amount</TableCell>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>Location</TableCell>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>Actions</TableCell>
+            <TableRow sx={{ backgroundColor: '#1976d2' }}>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Location</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* Iterate over filtered buyers and display their details */}
-            {filteredBuyers.map((buyer) => (
-              <TableRow key={buyer.id}>
+            {filteredBuyers.map((buyer, index) => (
+              <TableRow key={buyer.id} sx={{ backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white' }}>
                 <TableCell>{buyer.id}</TableCell>
                 <TableCell>{buyer.name}</TableCell>
                 <TableCell>{buyer.amount}</TableCell>
                 <TableCell>{buyer.location}</TableCell>
                 <TableCell>
-                  {/* 3-dot action menu */}
                   <IconButton aria-label="more" onClick={(event) => handleMenuClick(event, buyer.id)}>
                     <MoreVertIcon />
                   </IconButton>
@@ -180,11 +163,18 @@ const Buyer: React.FC = () => {
         </Table>
       </TableContainer>
 
-      {/* Floating Action Button to navigate to the add buyer form */}
+      {/* Floating Action Button (FAB) */}
       <Fab
         color="primary"
         aria-label="add"
-        sx={{ position: 'fixed', bottom: 16, right: 16 }}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          backgroundColor: '#1976d2',
+          '&:hover': { backgroundColor: '#125ea1' },
+          boxShadow: 3,
+        }}
         onClick={handleFabClick}
       >
         <AddIcon />

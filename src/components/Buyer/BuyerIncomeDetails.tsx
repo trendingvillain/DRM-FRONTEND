@@ -11,11 +11,17 @@ import {
   TableCell,
   Paper,
   Button,
+  Fab,
+  TextField,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  Grid,
 } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
+import { useParams, useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../config/apiConfig';
 
-// Define the structure of a BuyerIncome object
 interface BuyerIncome {
   id: number;
   buyer: {
@@ -25,21 +31,58 @@ interface BuyerIncome {
     amount: number;
     createdDate: string;
   };
-  visit_date: string; // Updated to match the key in the API response
+  visit_date: string;
   amount: number;
 }
 
 const BuyerIncomeDetails: React.FC = () => {
-  const { buyerId } = useParams<{ buyerId: string }>(); // Get buyerId from URL params
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { buyerId } = useParams<{ buyerId: string }>();
   const [incomeRecords, setIncomeRecords] = useState<BuyerIncome[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<BuyerIncome[]>([]);
+  const [todayCount, setTodayCount] = useState(0);
+  const [monthCount, setMonthCount] = useState(0);
+  const [yearCount, setYearCount] = useState(0);
+  const [fromDate, setFromDate] = useState<string>('');
+  const [toDate, setToDate] = useState<string>('');
+  const navigate = useNavigate();
 
-  // Fetch income details for the buyer when the component mounts
   useEffect(() => {
     if (buyerId) {
       axios
         .get(`${API_BASE_URL}/api/buyer-income/buyer/${buyerId}`)
         .then((response) => {
-          setIncomeRecords(response.data); // Store the fetched income records
+          const sortedRecords = response.data.sort(
+            (a: BuyerIncome, b: BuyerIncome) =>
+              new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime()
+          );
+          setIncomeRecords(sortedRecords);
+          setFilteredRecords(sortedRecords);
+
+          // Calculate counts for today, month, and year
+          const today = new Date();
+          const currentMonth = today.getMonth() + 1; // Months are zero-indexed
+          const currentYear = today.getFullYear();
+          const todayRecords = sortedRecords.filter((record: BuyerIncome) => {
+            const recordDate = new Date(record.visit_date);
+            return (
+              recordDate.getDate() === today.getDate() &&
+              recordDate.getMonth() === today.getMonth() &&
+              recordDate.getFullYear() === today.getFullYear()
+            );
+          });
+          const monthRecords = sortedRecords.filter((record: BuyerIncome) => {
+            const recordDate = new Date(record.visit_date);
+            return recordDate.getMonth() + 1 === currentMonth && recordDate.getFullYear() === currentYear;
+          });
+          const yearRecords = sortedRecords.filter((record: BuyerIncome) => {
+            const recordDate = new Date(record.visit_date);
+            return recordDate.getFullYear() === currentYear;
+          });
+          setTodayCount(todayRecords.length);
+          setMonthCount(monthRecords.length);
+          setYearCount(yearRecords.length);
         })
         .catch((error) => {
           console.error('Error fetching buyer income details:', error);
@@ -47,74 +90,191 @@ const BuyerIncomeDetails: React.FC = () => {
     }
   }, [buyerId]);
 
-  // Helper function to format the date in DD/MM/YYYY
   const formatDate = (dateString: string): string => {
-    if (!dateString) {
-      console.error('Visit date is undefined or null');
-      return 'No Date Available'; // Return a user-friendly message
-    }
-
+    if (!dateString) return 'No Date Available';
     const date = new Date(dateString);
-
-    // Check if the date is valid
     if (isNaN(date.getTime())) {
       console.error('Invalid date format:', dateString);
-      return 'Invalid Date'; // Return a fallback message for invalid dates
+      return 'Invalid Date';
     }
-
-    // Format the date as DD/MM/YYYY
-    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero if needed
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
-    return `${day}/${month}/${year}`; // Return formatted date as DD/MM/YYYY
+  const handleFilter = () => {
+    if (!fromDate || !toDate) {
+      alert('Please select both "From Date" and "To Date".');
+      return;
+    }
+    const fromDateObj = new Date(fromDate);
+    const toDateObj = new Date(toDate);
+    if (fromDateObj > toDateObj) {
+      alert('"From Date" cannot be later than "To Date".');
+      return;
+    }
+    const filtered = incomeRecords.filter((record) => {
+      const recordDate = new Date(record.visit_date);
+      return recordDate >= fromDateObj && recordDate <= toDateObj;
+    });
+    setFilteredRecords(filtered);
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ padding: isMobile ? 1 : 3 }}>
+      {/* Header */}
+      <Typography
+        variant={isMobile ? 'h5' : 'h4'}
+        gutterBottom
+        sx={{
+          textAlign: 'center',
+          fontWeight: 'bold',
+          color: theme.palette.primary.main,
+          marginBottom: 3,
+        }}
+      >
         Buyer Income Details for Buyer ID: {buyerId}
       </Typography>
 
-      <TableContainer component={Paper} style={{ marginTop: '30px', maxHeight: '350px' }}>
+      {/* Display Counts */}
+      <Grid container spacing={2} sx={{ marginBottom: 3 }}>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={3} sx={{ padding: 2, textAlign: 'center', backgroundColor: '#e3f2fd' }}>
+            <Typography variant="h6">Today's</Typography>
+            <Typography variant="h4">{todayCount}</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={3} sx={{ padding: 2, textAlign: 'center', backgroundColor: '#fff3e0' }}>
+            <Typography variant="h6">This Month's</Typography>
+            <Typography variant="h4">{monthCount}</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Paper elevation={3} sx={{ padding: 2, textAlign: 'center', backgroundColor: '#e8f5e9' }}>
+            <Typography variant="h6">This Year's</Typography>
+            <Typography variant="h4">{yearCount}</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* Date Range Filter */}
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={2}
+        sx={{ marginBottom: 3 }}
+      >
+        <TextField
+          label="From Date"
+          type="date"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth={isMobile}
+        />
+        <TextField
+          label="To Date"
+          type="date"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth={isMobile}
+        />
+        <Button
+          variant="contained"
+          onClick={handleFilter}
+          fullWidth={isMobile}
+          sx={{
+            height: '100%',
+            marginTop: isMobile ? 2 : 0,
+          }}
+        >
+          Filter
+        </Button>
+      </Stack>
+
+      {/* Income Records Table */}
+      <TableContainer
+        component={Paper}
+        sx={{
+          maxHeight: isMobile ? 300 : 400,
+          overflowY: 'auto',
+          marginBottom: 3,
+        }}
+      >
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>
+              <TableCell
+                sx={{
+                  backgroundColor: '#e0f7fa',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '0.8rem' : '1rem',
+                }}
+              >
                 Visit Date
               </TableCell>
-              <TableCell style={{ backgroundColor: '#e0f7fa', fontWeight: 'bold' }}>
+              <TableCell
+                sx={{
+                  backgroundColor: '#e0f7fa',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '0.8rem' : '1rem',
+                }}
+              >
                 Amount
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* Iterate over income records and display their details */}
-            {incomeRecords.length > 0 ? (
-              incomeRecords.map((income) => (
+            {filteredRecords.length > 0 ? (
+              filteredRecords.map((income) => (
                 <TableRow key={income.id}>
-                  <TableCell>{formatDate(income.visit_date)}</TableCell> {/* Updated key here */}
+                  <TableCell>{formatDate(income.visit_date)}</TableCell>
                   <TableCell>{income.amount}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={2}>No income records found for this buyer.</TableCell>
+                <TableCell colSpan={2} align="center">
+                  No income records found for this buyer.
+                </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Back button */}
+      {/* Back Button */}
       <Button
         variant="outlined"
         color="primary"
-        onClick={() => window.history.back()} // Go back to the previous page
-        sx={{ marginTop: 2 }}
+        onClick={() => window.history.back()}
+        fullWidth={isMobile}
+        sx={{
+          marginBottom: 3,
+        }}
       >
         Back
       </Button>
+
+      {/* Floating "+" Button at the bottom-right corner */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        sx={{
+          position: 'fixed',
+          bottom: isMobile ? 10 : 16,
+          right: isMobile ? 10 : 16,
+        }}
+        onClick={() => navigate(`/buyer-income/form/${buyerId}`)}
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 };

@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { TextField, Button, Box, Typography, CircularProgress } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  CircularProgress,
+  Paper,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../config/apiConfig';
 
 const LandOwnerForm: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { id } = useParams(); // Get the id from the URL params
   const navigate = useNavigate();
   const [landOwner, setLandOwner] = useState({
@@ -33,7 +44,6 @@ const LandOwnerForm: React.FC = () => {
   // Handle form submission for updating the land owner
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (id) {
       axios
         .put(`${API_BASE_URL}/api/land-owners/${id}`, landOwner)
@@ -55,55 +65,100 @@ const LandOwnerForm: React.FC = () => {
   if (loading) {
     // Show a loading spinner while the data is being fetched
     return (
-      <Box sx={{ padding: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          padding: 2,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ padding: isMobile ? 1 : 3 }}>
+      {/* Header */}
+      <Typography
+        variant={isMobile ? 'h5' : 'h4'}
+        gutterBottom
+        sx={{
+          textAlign: 'center',
+          fontWeight: 'bold',
+          color: theme.palette.primary.main,
+          marginBottom: 3,
+        }}
+      >
         Edit Land Owner
       </Typography>
-      <form onSubmit={handleSubmit}>
-        {/* Name (editable now) */}
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth
-          value={landOwner.name || ''}  // Ensure it's not undefined
-          name="name" // Ensure the name property is correctly updated in the state
-          onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
-        />
-        
-        {/* Location (editable now) */}
-        <TextField
-          label="Location"
-          variant="outlined"
-          fullWidth
-          value={landOwner.location || ''}  // Ensure it's not undefined
-          name="location" // Ensure the location property is correctly updated in the state
-          onChange={handleChange}
-          sx={{ marginBottom: '10px' }}
-        />
-        
-        {/* Amount (editable) */}
-        <TextField
-          label="Amount"
-          variant="outlined"
-          fullWidth
-          value={landOwner.amount}
-          name="amount"
-          onChange={handleChange}
-          sx={{ marginBottom: '20px' }}
-        />
-        
-        <Button variant="contained" color="primary" type="submit">
-          Save Changes
-        </Button>
-      </form>
+
+      {/* Form Container */}
+      <Paper
+        elevation={3}
+        sx={{
+          padding: isMobile ? 2 : 4,
+          maxWidth: isMobile ? '100%' : 600,
+          width: '100%',
+          margin: 'auto',
+        }}
+      >
+        <form onSubmit={handleSubmit}>
+          {/* Name Field */}
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            value={landOwner.name || ''}
+            name="name"
+            onChange={handleChange}
+            required
+            autoFocus
+            sx={{ marginBottom: 2 }}
+          />
+
+          {/* Location Field */}
+          <TextField
+            label="Location"
+            variant="outlined"
+            fullWidth
+            value={landOwner.location || ''}
+            name="location"
+            onChange={handleChange}
+            required
+            sx={{ marginBottom: 2 }}
+          />
+
+          {/* Amount Field */}
+          <TextField
+            label="Amount"
+            variant="outlined"
+            fullWidth
+            type="number"
+            value={landOwner.amount}
+            name="amount"
+            onChange={handleChange}
+            required
+            sx={{ marginBottom: 3 }}
+          />
+
+          {/* Submit Button */}
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            fullWidth={isMobile}
+            sx={{
+              padding: isMobile ? 1.5 : 2,
+              fontSize: isMobile ? '0.8rem' : '1rem',
+            }}
+          >
+            Save Changes
+          </Button>
+        </form>
+      </Paper>
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
 import {
   Container,
   Paper,
@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import API_BASE_URL from '../config/apiConfig';
-import { SelectChangeEvent } from '@mui/material/Select';
 
 const FormContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -36,14 +35,16 @@ const productNames = [
 ];
 
 
+
 const BuyerRecordForm: React.FC = () => {
+  const { buyerId } = useParams<{ buyerId: string }>(); // Get buyer ID from URL
   const [buyers, setBuyers] = useState<any[]>([]);
   const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
-  const [visitDate, setVisitDate] = useState<string>('');
+  const [visitDate, setVisitDate] = useState('');
   const [amount, setAmount] = useState<number>(0);
-  const [varients, setVarients] = useState<
-    { productName: number; quantity: number; price: number; weight: number }[]
-  >([{ productName: 1, quantity: 0, price: 0, weight: 0 }]);
+  const [varients, setVarients] = useState([
+    { productName: 1, quantity: 0, price: 0, weight: 0 }
+  ]);
   const [alert, setAlert] = useState<{ type: 'success' | 'error' | null; message: string }>({
     type: null,
     message: '',
@@ -51,30 +52,38 @@ const BuyerRecordForm: React.FC = () => {
 
   const navigate = useNavigate();
 
-
+  // Fetch buyers and pre-select the buyer if buyerId is present
   useEffect(() => {
     const fetchBuyers = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/buyers`);
         setBuyers(response.data);
+        if (buyerId) {
+          const selected = response.data.find((buyer: any) => buyer.id === parseInt(buyerId));
+          setSelectedBuyer(selected);
+        }
       } catch (error) {
         console.error('Error fetching buyers:', error);
       }
     };
     fetchBuyers();
-  }, []);
+  }, [buyerId]);
 
-  const handleBuyerChange = (event: SelectChangeEvent<any>) => {
+  const handleBuyerChange = (event: any) => {
     const buyerId = event.target.value;
     const selected = buyers.find((buyer) => buyer.id === buyerId);
     setSelectedBuyer(selected || null);
   };
 
-  const handleVarientChange = (index: number, field: string, value: any) => {
-    const updatedVarients = [...varients];
-    updatedVarients[index] = { ...updatedVarients[index], [field]: value || 0 };
-    setVarients(updatedVarients);
-  };
+  const handleVarientChange = (
+  index: number,
+  field: keyof typeof varients[number], // Explicitly define allowed keys
+  value: any
+) => {
+  const updatedVarients = [...varients];
+  updatedVarients[index][field] = value || 0; // Now TypeScript knows `field` is valid
+  setVarients(updatedVarients);
+};
 
   const addVarient = () => {
     setVarients([...varients, { productName: 1, quantity: 0, price: 0, weight: 0 }]);
@@ -82,8 +91,7 @@ const BuyerRecordForm: React.FC = () => {
 
   const removeVarient = (index: number) => {
     if (varients.length > 1) {
-      const updatedVarients = varients.filter((_, i) => i !== index);
-      setVarients(updatedVarients);
+      setVarients(varients.filter((_, i) => i !== index));
     }
   };
 
@@ -107,16 +115,10 @@ const BuyerRecordForm: React.FC = () => {
       })),
     };
 
-    console.log('Submitting formData:', formData); // Debugging step
-
     try {
       const response = await axios.post(`${API_BASE_URL}/api/buyer-records`, formData);
       if (response.status === 201) {
         setAlert({ type: 'success', message: 'Buyer record created successfully!' });
-        setSelectedBuyer(null);
-        setVisitDate('');
-        setAmount(0);
-        setVarients([{ productName: 1, quantity: 0, price: 0, weight: 0 }]);
         navigate('/');
       }
     } catch (error) {
@@ -142,7 +144,10 @@ const BuyerRecordForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Buyer</InputLabel>
-                <Select value={selectedBuyer ? selectedBuyer.id : ''} onChange={handleBuyerChange}>
+                <Select
+                  value={selectedBuyer ? selectedBuyer.id : ''}
+                  onChange={handleBuyerChange}
+                >
                   {buyers.map((buyer) => (
                     <MenuItem key={buyer.id} value={buyer.id}>
                       {buyer.name}
@@ -151,6 +156,7 @@ const BuyerRecordForm: React.FC = () => {
                 </Select>
                 <FormHelperText>Select the buyer for this record.</FormHelperText>
               </FormControl>
+
               <TextField
                 label="Visit Date"
                 type="date"
@@ -159,21 +165,26 @@ const BuyerRecordForm: React.FC = () => {
                 onChange={(e) => setVisitDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
                 helperText="Select the visit date."
+                sx={{ marginTop: 2 }}
               />
+
               <TextField
                 label="Amount"
                 type="number"
                 fullWidth
-                value={amount || ''}
+                value={amount}
                 onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
                 helperText="Enter the total amount."
+                sx={{ marginTop: 2 }}
               />
             </Grid>
+
             <Grid item xs={12} md={6}>
               {varients.map((varient, index) => (
-                <Paper key={index} style={{ padding: 16, marginBottom: 16 }}>
+                <Paper key={index} sx={{ padding: 2, marginBottom: 2 }}>
                   <Typography variant="h6">Product {index + 1}</Typography>
-                  <FormControl fullWidth>
+
+                  <FormControl fullWidth sx={{ marginBottom: 2 }}>
                     <InputLabel>Product Name</InputLabel>
                     <Select
                       value={varient.productName}
@@ -185,32 +196,35 @@ const BuyerRecordForm: React.FC = () => {
                         </MenuItem>
                       ))}
                     </Select>
-                    <FormHelperText>Select the product name.</FormHelperText>
                   </FormControl>
+
                   <TextField
                     label="Quantity"
                     type="number"
                     fullWidth
-                    value={varient.quantity || ''}
+                    value={varient.quantity}
                     onChange={(e) => handleVarientChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                    helperText="Enter the product quantity."
+                    sx={{ marginBottom: 2 }}
                   />
+
                   <TextField
                     label="Weight"
                     type="number"
                     fullWidth
-                    value={varient.weight || ''}
+                    value={varient.weight}
                     onChange={(e) => handleVarientChange(index, 'weight', parseFloat(e.target.value) || 0)}
-                    helperText="Enter the product weight."
+                    sx={{ marginBottom: 2 }}
                   />
+
                   <TextField
                     label="Price"
                     type="number"
                     fullWidth
-                    value={varient.price || ''}
+                    value={varient.price}
                     onChange={(e) => handleVarientChange(index, 'price', parseFloat(e.target.value) || 0)}
-                    helperText="Enter the product price."
+                    sx={{ marginBottom: 2 }}
                   />
+
                   <Button
                     variant="outlined"
                     color="error"
@@ -221,16 +235,20 @@ const BuyerRecordForm: React.FC = () => {
                   </Button>
                 </Paper>
               ))}
-              <Button variant="outlined" onClick={addVarient}>
+              <Button variant="outlined" onClick={addVarient} sx={{ marginTop: 2 }}>
                 Add Product
               </Button>
             </Grid>
-            <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary">
-                Submit
-              </Button>
-            </Grid>
           </Grid>
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: 3 }}
+          >
+            Submit
+          </Button>
         </form>
       </FormContainer>
     </Container>
