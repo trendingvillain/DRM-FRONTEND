@@ -15,7 +15,6 @@ import {
   MenuItem,
   IconButton,
   TextField,
-  Button,
   useTheme,
   useMediaQuery,
   Grid,
@@ -87,10 +86,6 @@ const LandOwner: React.FC = () => {
         String(landOwner.phonenumber).includes(value)
       )
     );
-  };
-
-  const handleBack = () => {
-    navigate('/');
   };
 
   return (
@@ -170,8 +165,8 @@ const LandOwner: React.FC = () => {
           </TableHead>
           <TableBody>
             {filteredLandOwners.length > 0 ? (
-              filteredLandOwners.map((landOwner) => (
-                <TableRow key={landOwner.id}>
+              filteredLandOwners.map((landOwner, index) => (
+                <TableRow key={landOwner.id} sx={{ backgroundColor: index % 2 === 0 ? '#f5f5f5' : 'white' }}>
                   <TableCell>{landOwner.id}</TableCell>
                   <TableCell>{landOwner.name}</TableCell>
                   <TableCell>{landOwner.amount}</TableCell>

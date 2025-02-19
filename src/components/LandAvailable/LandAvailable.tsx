@@ -15,7 +15,7 @@ import {
   Menu,
   MenuItem,
   Fab,
-  Button,
+
   Select,
   InputLabel,
   FormControl,
@@ -99,9 +99,7 @@ const LandAvailable: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
-    navigate('/'); // Navigate to the home route
-  };
+
 
   return (
     <Box sx={{ padding: 2 }}>

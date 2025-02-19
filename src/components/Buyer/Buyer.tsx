@@ -81,11 +81,16 @@ const Buyer: React.FC = () => {
     setFilteredBuyers(buyers.filter((buyer) => buyer.location.toLowerCase().includes(value)));
   };
   const handleSearchPhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setPhoneNumber(value);
+  const value = event.target.value.trim(); // Remove leading/trailing spaces
+  setPhoneNumber(value);
 
-    setFilteredBuyers(buyers.filter((buyer) => buyer.phonenumber && buyer.phonenumber.includes(value)));
-  }
+  setFilteredBuyers(
+    buyers.filter((buyer) =>
+      (buyer.phonenumber?.toString() || "").includes(value)
+    )
+  );
+};
+
 
   return (
     <Box sx={{ padding: 3 }}>
