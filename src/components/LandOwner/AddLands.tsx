@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   Typography,
@@ -24,37 +24,36 @@ const variants = [
   { id: 5, name: 'காசாளி' }
 ];
 
-interface Landowner {
-  id: number;
-  name: string;
-}
-
-const AddLandAvailable: React.FC = () => {
+const AddLands: React.FC = () => {
   const navigate = useNavigate();
+   const { landOwnerId } = useParams<{ landOwnerId: string }>(); 
+  const [landOwnerName, setLandOwnerName] = useState('');
   const [name, setName] = useState('');
   const [place, setPlace] = useState('');
   const [area, setArea] = useState('');
   const [varient, setVarient] = useState('');
   const [trees, setTrees] = useState<number | string>('');
   const [amount, setAmount] = useState<number | string>('');
-  const [landOwnerId, setLandOwnerId] = useState<number | ''>('');
-  const [landOwners, setLandOwners] = useState<Landowner[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch landowners from API
-    const fetchLandOwners = async () => {
+    // Fetch landowner name based on ID
+    const fetchLandOwner = async () => {
       try {
-        const response = await axios.get<Landowner[]>(`${API_BASE_URL}/api/land-owners`);
-        setLandOwners(response.data);
+        const response = await axios.get(`${API_BASE_URL}/api/land-owners/${landOwnerId}`);
+        setLandOwnerName(response.data.name); // Store landowner name
       } catch (err) {
-        console.error('Error fetching landowners:', err);
+        console.error('Failed to fetch landowner details:', err);
+        setLandOwnerName('Unknown Landowner');
+      } finally {
+        setLoading(false);
       }
     };
-    fetchLandOwners();
-  }, []);
+
+    fetchLandOwner();
+  }, [landOwnerId]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,7 +67,7 @@ const AddLandAvailable: React.FC = () => {
         varient,
         trees: Number(trees),
         amount: Number(amount),
-        landOwnerId: Number(landOwnerId),
+        landOwnerId: Number(landOwnerId), // Fixed landowner ID from URL
       };
 
       // Make a POST request to create a new land available
@@ -100,21 +99,16 @@ const AddLandAvailable: React.FC = () => {
           <CircularProgress />
         </Box>
       ) : (
-          <form onSubmit={handleSubmit}>
-            <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel>Landowner</InputLabel>
-            <Select
-              value={landOwnerId}
-              onChange={(e) => setLandOwnerId(Number(e.target.value))}
-              label="Landowner"
-            >
-              {landOwners.map((owner) => (
-                <MenuItem key={owner.id} value={owner.id}>
-                  {owner.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <form onSubmit={handleSubmit}>
+          {/* Display Landowner Name */}
+          <TextField
+            label="Landowner"
+            fullWidth
+            value={landOwnerName}
+            disabled
+            sx={{ marginBottom: 2 }}
+          />
+
           <TextField
             label="Land Name"
             fullWidth
@@ -172,9 +166,6 @@ const AddLandAvailable: React.FC = () => {
             sx={{ marginBottom: 2 }}
           />
 
-          {/* Landowner Select Dropdown */}
-          
-
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button variant="outlined" color="secondary" onClick={() => navigate('/land-available')}>
               Cancel
@@ -195,4 +186,4 @@ const AddLandAvailable: React.FC = () => {
   );
 };
 
-export default AddLandAvailable;
+export default AddLands;

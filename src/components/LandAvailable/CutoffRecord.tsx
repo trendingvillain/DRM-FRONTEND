@@ -24,6 +24,9 @@ interface CutoffRecord {
   area: string;
   varient: string;
   trees: number;
+  ship: string;
+  amount: number;
+  weight: number;
   created_date: string;
 }
 
@@ -137,6 +140,9 @@ const CutoffRecord: React.FC = () => {
               <TableCell><strong>Date</strong></TableCell>
               <TableCell><strong>Area</strong></TableCell>
               <TableCell><strong>No. of Cutted Trees</strong></TableCell>
+              <TableCell><strong>Amount</strong></TableCell>
+              <TableCell><strong>Weight</strong></TableCell>
+              <TableCell><strong>Ship</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -145,6 +151,9 @@ const CutoffRecord: React.FC = () => {
                 <TableCell>{format(new Date(record.created_date), 'dd/MM/yyyy')}</TableCell>
                 <TableCell>{record.area}</TableCell>
                 <TableCell>{record.trees}</TableCell>
+                <TableCell>{record.amount}</TableCell>
+                <TableCell>{record.weight}</TableCell>
+                <TableCell>{record.ship}</TableCell>
               </TableRow>
             )) : <TableRow><TableCell colSpan={3} align="center">No records found.</TableCell></TableRow>}
           </TableBody>

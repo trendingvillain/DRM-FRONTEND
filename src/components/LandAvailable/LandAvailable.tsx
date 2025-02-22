@@ -15,7 +15,6 @@ import {
   Menu,
   MenuItem,
   Fab,
-
   Select,
   InputLabel,
   FormControl,
@@ -32,11 +31,19 @@ interface LandAvailable {
   place: string;
   varient: string;
   trees: number;
-  createdDate: string | null;
+  amount: number;
+  land_owner_id: number; // Added landowner ID
+}
+
+interface LandOwner {
+  id: number;
+  name: string;
+  contact: string;
 }
 
 const LandAvailable: React.FC = () => {
   const [landAvailableList, setLandAvailableList] = useState<LandAvailable[]>([]);
+  const [landOwnerInfo, setLandOwnerInfo] = useState<Record<number, LandOwner>>({});
   const [searchName, setSearchName] = useState('');
   const [searchPlace, setSearchPlace] = useState('');
   const [searchArea, setSearchArea] = useState('');
@@ -46,8 +53,8 @@ const LandAvailable: React.FC = () => {
   const [selectedLandId, setSelectedLandId] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  // Predefined variant options for the Select dropdown
-  const variantOptions = ['நாடு', 'கோழிக்குடு',  'கற்பூரவள்ளி',   'சக்கை', 'காசாளி'];
+  // Predefined variant options
+  const variantOptions = ['நாடு', 'கோழிக்குடு', 'கற்பூரவள்ளி', 'சக்கை', 'காசாளி'];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,8 +62,21 @@ const LandAvailable: React.FC = () => {
         const response = await axios.get<LandAvailable[]>(`${API_BASE_URL}/api/land-available`);
         setLandAvailableList(response.data);
         setFilteredData(response.data);
+
+        // Fetch landowners for each land record
+        const landOwnerRequests = response.data.map((land) =>
+          axios.get(`${API_BASE_URL}/api/land-owners/${land.land_owner_id}`)
+        );
+        const landOwnerResponses = await Promise.all(landOwnerRequests);
+
+        const landOwnersData: Record<number, LandOwner> = {};
+        landOwnerResponses.forEach((res, index) => {
+          landOwnersData[response.data[index].land_owner_id] = res.data;
+        });
+
+        setLandOwnerInfo(landOwnersData);
       } catch (err) {
-        console.error('Error fetching land available data:', err);
+        console.error('Error fetching data:', err);
       }
     };
 
@@ -75,7 +95,6 @@ const LandAvailable: React.FC = () => {
   }, [searchName, searchArea, searchPlace, searchVarient, landAvailableList]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, landId: number) => {
-    console.log('Opening menu for Land ID:', landId);  // Debugging
     setMenuAnchorEl(event.currentTarget);
     setSelectedLandId(landId);
   };
@@ -99,14 +118,11 @@ const LandAvailable: React.FC = () => {
     }
   };
 
-
-
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom>
         Land Available Records
       </Typography>
-      
 
       {/* Search Section */}
       <Box sx={{ display: 'flex', gap: 2, marginBottom: 3 }}>
@@ -123,13 +139,13 @@ const LandAvailable: React.FC = () => {
           variant="outlined"
         />
         <TextField
-          label="place"
+          label="Place"
           value={searchPlace}
           onChange={(e) => setSearchPlace(e.target.value)}
           variant="outlined"
         />
 
-        {/* Search by Variant (Now a Select Dropdown) */}
+        {/* Search by Variant */}
         <FormControl variant="outlined" fullWidth>
           <InputLabel>Search by Varient</InputLabel>
           <Select
@@ -156,33 +172,31 @@ const LandAvailable: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Name</strong></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Place</strong></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Area</strong></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Varient</strong></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>No. of Trees</strong></TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}><strong>Actions</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Land Owner Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Place</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Area</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Varient</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>No. of Trees</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredData.map((land) => (
               <TableRow key={land.id}>
+                <TableCell>{landOwnerInfo[land.land_owner_id]?.name || 'Loading...'}</TableCell>
                 <TableCell>{land.name}</TableCell>
                 <TableCell>{land.place}</TableCell>
                 <TableCell>{land.area}</TableCell>
                 <TableCell>{land.varient}</TableCell>
                 <TableCell>{land.trees}</TableCell>
+                <TableCell>{land.amount}</TableCell>
                 <TableCell>
-                  <IconButton
-                    onClick={(event) => handleMenuOpen(event, land.id)}
-                  >
+                  <IconButton onClick={(event) => handleMenuOpen(event, land.id)}>
                     <MoreVert />
                   </IconButton>
-                  <Menu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean(menuAnchorEl) && selectedLandId === land.id}
-                    onClose={handleMenuClose}
-                  >
+                  <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
                     <MenuItem onClick={handleViewCutoffRecord}>View Cutoff Record</MenuItem>
                     <MenuItem onClick={handleEditLand}>Edit</MenuItem>
                   </Menu>
@@ -192,16 +206,11 @@ const LandAvailable: React.FC = () => {
           </TableBody>
         </Table>
       </Paper>
-
-      {/* Add New Land Available Button */}
-      <Fab
-        color="primary"
-        sx={{ position: 'fixed', bottom: 16, right: 16 }}
-        onClick={() => navigate('/add-land-available')}
-      >
+      <Fab color="primary" sx={{ position: 'fixed', bottom: 16, right: 16 }} onClick={() => navigate('/add-land-available')}>
         <Add />
       </Fab>
     </Box>
+    
   );
 };
 

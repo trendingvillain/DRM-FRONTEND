@@ -195,6 +195,14 @@ const LandOwner: React.FC = () => {
                       >
                         Land Owner Record
                       </MenuItem>
+                       <MenuItem
+                        onClick={() => {
+                          navigate(`/landowner-lands/${landOwner.id}`);
+                          setAnchorEl(null);
+                        }}
+                      >
+                        Lands
+                      </MenuItem>
                       <MenuItem
                         onClick={() => {
                           navigate(`/landowner-form/${landOwner.id}`);
