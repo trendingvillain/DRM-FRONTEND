@@ -25,6 +25,8 @@ import BuyerIncomeFormId from './components/Buyer/BuyerIncomeFormId';
 import LandOwnerRecordForm from './components/LandOwnerRecordForm';
 import Lands from './components/LandOwner/Lands';
 import AddLands from './components/LandOwner/AddLands';
+import CutoffsRecords from './components/CutoffsRecords';
+import BuyersRecords from './components/BuyersRecords';
 
 const App: React.FC = () => {
   const isMobile = useMediaQuery('(max-width:600px)'); // Detects if the user is on a mobile device
@@ -39,6 +41,8 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<BuyerComponent />} />
           <Route path="/buyers" element={<BuyerComponent />} />
+          <Route path="/cutoffs-records" element={<CutoffsRecords />} />
+          <Route path="/buyers-records-details" element={<BuyersRecords />} />
           <Route path="/buyer-income" element={<BuyerIncomeComponent />} />
           <Route path="/buyer-records" element={<BuyerRecordsComponent />} />
           <Route path="/create-cutoff/:id" element={<CutoffComponent />} />

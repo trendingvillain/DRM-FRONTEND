@@ -48,7 +48,7 @@ const LandOwnerForm: React.FC = () => {
       axios
         .put(`${API_BASE_URL}/api/land-owners/${id}`, landOwner)
         .then(() => {
-          navigate('/landowners'); // Navigate back to the list of land owners after update
+          navigate(-1); // Navigate back to the list of land owners after update
         })
         .catch((error) => {
           console.error('Error updating land owner:', error);

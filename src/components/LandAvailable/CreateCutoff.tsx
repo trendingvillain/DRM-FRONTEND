@@ -79,7 +79,7 @@ const CreateCutoff: React.FC = () => {
   };
 
   const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+    navigate(-1);
   };
 
   if (landLoading) {

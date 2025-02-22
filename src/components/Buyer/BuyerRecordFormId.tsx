@@ -38,6 +38,8 @@ const productNames = [
   { id: 3, name: 'கற்பூரவள்ளி' },
   { id: 4, name: 'சக்கை' },
   { id: 5, name: 'காசாளி' },
+  { id: 6, name: 'Transport' },
+
 ];
 
 const BuyerRecordForm: React.FC = () => {

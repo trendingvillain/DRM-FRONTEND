@@ -58,7 +58,7 @@ const EditLandAvailable: React.FC = () => {
       try {
         await axios.put(`${API_BASE_URL}/api/land-available/${id}`, land);
         setSnackbarOpen(true);
-        setTimeout(() => navigate('/land-available'), 1500); // Redirect after 1.5 seconds
+        setTimeout(() => navigate(-1), 1500); // Redirect after 1.5 seconds
       } catch (err) {
         setError('Failed to update land data.');
       }
@@ -67,6 +67,7 @@ const EditLandAvailable: React.FC = () => {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+    navigate(-1)
   };
 
   if (loading) {

@@ -53,7 +53,7 @@ const AddLandOwner: React.FC = () => {
         phoneNumber: `${phoneNumber}`, // Ensure +91 prefix
       });
 
-      navigate('/landowners'); // Redirect after success
+      navigate(-1); // Redirect after success
     } catch (error) {
       console.error('Error adding land owner:', error);
     } finally {

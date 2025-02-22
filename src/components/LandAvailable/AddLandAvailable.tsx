@@ -87,6 +87,7 @@ const AddLandAvailable: React.FC = () => {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+    navigate(-1);
   };
 
   return (

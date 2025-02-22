@@ -74,7 +74,7 @@ const AddLands: React.FC = () => {
       const response = await axios.post(`${API_BASE_URL}/api/land-available`, landData);
 
       if (response.status === 200) {
-        navigate('/land-available');
+        navigate(-1);
       }
     } catch (err) {
       setError('Failed to add land available. Please try again.');
