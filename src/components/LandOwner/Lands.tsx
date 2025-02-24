@@ -129,7 +129,14 @@ const Lands: React.FC = () => {
                 <TableCell>{land.varient}</TableCell>
                 <TableCell>{land.trees}</TableCell>
                 <TableCell>{land.amount}</TableCell>
-                <TableCell>{land.created_date}</TableCell>
+                <TableCell>
+  {new Date(land.created_date).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })}
+</TableCell>
+
                 <TableCell>
                   <IconButton onClick={(event) => handleMenuOpen(event, land.id)}>
                     <MoreVert />
