@@ -27,6 +27,7 @@ interface Land {
   varient: string;
   trees: number;
   amount: number;
+  created_date: string;
   land_owner_id: number;
 }
 
@@ -115,6 +116,7 @@ const Lands: React.FC = () => {
               <TableCell><strong>Varient</strong></TableCell>
               <TableCell><strong>Trees</strong></TableCell>
               <TableCell><strong>Amount</strong></TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Date</TableCell>
               <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -127,6 +129,7 @@ const Lands: React.FC = () => {
                 <TableCell>{land.varient}</TableCell>
                 <TableCell>{land.trees}</TableCell>
                 <TableCell>{land.amount}</TableCell>
+                <TableCell>{land.created_date}</TableCell>
                 <TableCell>
                   <IconButton onClick={(event) => handleMenuOpen(event, land.id)}>
                     <MoreVert />
