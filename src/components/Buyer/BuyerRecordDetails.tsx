@@ -44,6 +44,7 @@ interface Variant {
   quantity: number;
   weight: number;
   price: number;
+  order_Index?: number;
 }
 
 const BuyerRecordDetails: React.FC = () => {
@@ -87,7 +88,7 @@ const BuyerRecordDetails: React.FC = () => {
         const recordsWithVariants = await Promise.all(
           response.data.map(async (record:BuyerRecord) => {
             const variantResponse = await axios.get(`${API_BASE_URL}/api/varients/${record.id}`);
-            return { ...record, varients: variantResponse.data };
+            return { ...record, varients: variantResponse.data.sort((a: Variant, b: Variant) => (a.order_Index ?? 0) - (b.order_Index ?? 0)) };
           })
         );
         recordsWithVariants.sort((a, b) => b.id - a.id);
