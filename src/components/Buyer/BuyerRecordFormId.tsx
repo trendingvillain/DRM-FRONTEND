@@ -38,9 +38,7 @@ const productNames = [
   { id: 3, name: 'கற்பூரவள்ளி' },
   { id: 4, name: 'சக்கை' },
   { id: 5, name: 'காசாளி' },
-  { id: 6, name: 'பூவன் தார்' },
-  { id: 7, name: 'ரஸ்தாலி' },
-  { id: 8, name: 'Transport' },
+  { id: 6, name: 'Transport' },
 
 ];
 
@@ -52,8 +50,9 @@ const BuyerRecordForm: React.FC = () => {
   const [visitDate, setVisitDate] = useState('');
   const [amount, setAmount] = useState<number>(0);
   const [varients, setVarients] = useState([
-    { productName: 1, quantity: 0, price: 0, weight: 0 },
-  ]);
+    { productName: 1, quantity: 0, price: 0, weight: 0, orderIndex: 0 },
+]);
+
   const [alert, setAlert] = useState<{
     type: 'success' | 'error' | null;
     message: string;
@@ -88,9 +87,13 @@ const BuyerRecordForm: React.FC = () => {
   setVarients(updatedVarients);
 };
 
-  const addVarient = () => {
-    setVarients([...varients, { productName: 1, quantity: 0, price: 0, weight: 0 }]);
-  };
+const addVarient = () => {
+  setVarients(prev => [
+      ...prev,
+      { productName: 1, quantity: 0, price: 0, weight: 0, orderIndex: prev.length }
+  ]);
+};
+
 
   const removeVarient = (index: number) => {
     if (varients.length > 1) {
@@ -108,13 +111,14 @@ const BuyerRecordForm: React.FC = () => {
       buyer: { id: selectedBuyer.id },
       visitDate,
       amount: amount || 0,
-      varients: varients.map((varient) => ({
+      varients: varients.map((varient, index) => ({
         productName:
           productNames.find((product) => product.id === varient.productName)
             ?.name || '',
         quantity: varient.quantity || 0,
         price: varient.price || 0,
         weight: varient.weight || 0,
+        orderIndex: index,
       })),
     };
     try {
