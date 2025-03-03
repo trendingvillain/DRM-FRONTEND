@@ -40,7 +40,8 @@ const productNames = [
   { id: 5, name: 'காசாளி' },
   { id: 6, name: 'நேந்திரம்' },
   { id: 7, name: 'ரஸ்தாலி'},
-  { id: 8, name: 'Transport' },
+  { id: 8, name: 'பூவன் தார்' },
+  { id: 9, name: 'Transport' },
 
 ];
 
