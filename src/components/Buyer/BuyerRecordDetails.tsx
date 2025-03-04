@@ -44,7 +44,7 @@ interface Variant {
   quantity: number;
   weight: number;
   price: number;
-  order_Index?: number;
+  order_index: number; // Ensure this is included in the Variant interface
 }
 
 const BuyerRecordDetails: React.FC = () => {
@@ -75,6 +75,7 @@ const BuyerRecordDetails: React.FC = () => {
         const response = await axios.get(`${API_BASE_URL}/api/buyers/${id}`);
         setBuyerInfo(response.data);
       } catch (err) {
+        console.error(err); // Log the error
         setError('Error loading buyer information.');
       }
     };
@@ -86,9 +87,9 @@ const BuyerRecordDetails: React.FC = () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/api/buyer-records/buyer/${id}`);
         const recordsWithVariants = await Promise.all(
-          response.data.map(async (record:BuyerRecord) => {
+          response.data.map(async (record: BuyerRecord) => {
             const variantResponse = await axios.get(`${API_BASE_URL}/api/varients/${record.id}`);
-            return { ...record, varients: variantResponse.data.sort((a: Variant, b: Variant) => (a.order_Index ?? 0) - (b.order_Index ?? 0)) };
+            return { ...record, varients: variantResponse.data };
           })
         );
         recordsWithVariants.sort((a, b) => b.id - a.id);
@@ -122,10 +123,10 @@ const BuyerRecordDetails: React.FC = () => {
         setTodayCount(todayRecords.length);
         setMonthCount(monthRecords.length);
         setYearCount(yearRecords.length);
+        setSnackbarOpen(true); // Show success snackbar only after successful data load
       } catch (err) {
+        console.error(err); // Log the error
         setError('Error loading buyer record data.');
-      } finally {
-        setSnackbarOpen(true);
       }
     };
     fetchBuyerRecords();
@@ -209,7 +210,16 @@ const BuyerRecordDetails: React.FC = () => {
       </Typography>
 
       {/* Banner Image */}
-      
+      <Box
+        component="img"
+        src={recordIcon}
+        alt="Record Icon"
+        sx={{
+          width: '100%',
+          height: 'auto',
+          marginBottom: 2,
+        }}
+      />
 
       {buyerInfo && (
         <Paper elevation={3} sx={{ padding: 2, marginBottom: 3 }}>
@@ -277,149 +287,152 @@ const BuyerRecordDetails: React.FC = () => {
       </Stack>
 
       {/* Display Filtered Records */}
-{filteredRecords.length > 0 ? (
-  filteredRecords.map((record) => (
-    <Paper
-      key={record.id}
-      sx={{
-        marginTop: 3,
-        padding: 2,
-        position: 'relative',
-      }}
-      id={`record-${record.id}`}
-    >
-      {/* Banner Image */}
-      <Box
-        component="img"
-        src={recordIcon} // Use the imported banner image
-        alt="Record Icon"
-        sx={{
-          width: '100%',
-          height: 'auto',
-          marginBottom: 2,
-        }}
-      />
+      {filteredRecords.length > 0 ? (
+        filteredRecords.map((record) => (
+          <Paper
+            key={record.id}
+            sx={{
+              marginTop: 3,
+              padding: 2,
+              position: 'relative',
+            }}
+            id={`record-${record.id}`}
+          >
+            {/* Banner Image */}
+            <Box
+              component="img"
+              src={recordIcon}
+              alt="Record Icon"
+              sx={{
+                width: '100%',
+                height: 'auto',
+                marginBottom: 2,
+              }}
+            />
 
-      {/* Record Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginLeft: isMobile ? 2 : 5,
-          marginRight: isMobile ? 2 : 5,
-          color: '#0fc33b',
-          marginBottom: 2,
-        }}
-      >
-        <Typography variant="h6">No: {record.id}</Typography>
-        <Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
-      </Box>
+            {/* Record Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginLeft: isMobile ? 2 : 5,
+                marginRight: isMobile ? 2 : 5,
+                color: '#0fc33b',
+                marginBottom: 2,
+              }}
+            >
+              <Typography variant="h6">No: {record.id}</Typography>
+              <Typography variant="h6">தேதி: {formatDate(record.visit_date)}</Typography>
+            </Box>
 
-      {/* Buyer Information */}
-      {buyerInfo && (
-        <Typography
-          variant="h6"
-          sx={{
-            marginLeft: isMobile ? 2 : 10,
-            marginTop: 3,
-            color: theme.palette.text.primary,
-          }}
-        >
-          திரு.{buyerInfo.name}
-        </Typography>
-      )}
+            {/* Buyer Information */}
+            {buyerInfo && (
+              <Typography
+                variant="h6"
+                sx={{
+                  marginLeft: isMobile ? 2 : 10,
+                  marginTop: 3,
+                  color: theme.palette.text.primary,
+                }}
+              >
+                திரு.{buyerInfo.name}
+              </Typography>
+            )}
 
-      {/* Product Table */}
-      <Table
-        sx={{
-          marginLeft: isMobile ? 1 : 2,
-          marginRight: isMobile ? 1 : 4,
-          marginTop: 3,
-          borderCollapse: 'collapse',
-        }}
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ fontWeight: 'bold' }}>Product Name</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>Quantity</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
-            <TableCell sx={{ fontWeight: 'bold' }}>Price</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {record.varients.length > 0 ? (
-            record.varients.map((variant) => (
-              <TableRow key={variant.id}>
-                <TableCell>{variant.product_name}</TableCell>
-                <TableCell>{variant.quantity}</TableCell>
-                <TableCell>{variant.weight} kg</TableCell>
-                <TableCell>₹{variant.price}</TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} align="center">
-                No products available.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            {/* Product Table */}
+            <Table
+              sx={{
+                marginLeft: isMobile ? 1 : 2,
+                marginRight: isMobile ? 1 : 4,
+                marginTop: 3,
+                borderCollapse: 'collapse',
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Product Name</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Quantity</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Price</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {record.varients.length > 0 ? (
+                  // Sort the varients by order_index before mapping
+                  record.varients
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((variant) => (
+                      <TableRow key={variant.id}>
+                        <TableCell>{variant.product_name}</TableCell>
+                        <TableCell>{variant.quantity}</TableCell>
+                        <TableCell>{variant.weight} kg</TableCell>
+                        <TableCell>₹{variant.price}</TableCell>
+                      </TableRow>
+                    ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No products available.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
 
-      {/* Total Amount */}
-      <Typography
-        variant="h6"
-        sx={{
-          marginTop: 3,
-          marginLeft: isMobile ? 2 : 10,
-          fontWeight: 'bold',
-          color: theme.palette.primary.main,
-        }}
-      >
-        Total: ₹{record.amount}
-      </Typography>
+            {/* Total Amount */}
+            <Typography
+              variant="h6"
+              sx={{
+                marginTop: 3,
+                marginLeft: isMobile ? 2 : 10,
+                fontWeight: 'bold',
+                color: theme.palette.primary.main,
+              }}
+            >
+              Total: ₹{record.amount}
+            </Typography>
 
-      {/* Balance + Income */}
-      {buyerInfo && (
+            {/* Balance + Income */}
+            {buyerInfo && (
+              <Typography
+                variant="body1"
+                sx={{
+                  marginLeft: isMobile ? 2 : 10,
+                  marginTop: 1,
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                Balance + Income: ₹{buyerInfo.amount}
+              </Typography>
+            )}
+
+            {/* Download Button */}
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => downloadPNG(record.id)}
+              sx={{
+                position: 'absolute',
+                bottom: 10,
+                right: 10,
+              }}
+            >
+              Download Record as PNG
+            </Button>
+          </Paper>
+        ))
+      ) : (
         <Typography
           variant="body1"
           sx={{
-            marginLeft: isMobile ? 2 : 10,
-            marginTop: 1,
+            textAlign: 'center',
+            marginTop: 3,
             color: theme.palette.text.secondary,
           }}
         >
-          Balance + Income: ₹{buyerInfo.amount}
+          No records found for the selected date range.
         </Typography>
       )}
-
-      {/* Download Button */}
-      <Button
-        variant="outlined"
-        color="primary"
-        onClick={() => downloadPNG(record.id)}
-        sx={{
-          position: 'absolute',
-          bottom: 10,
-          right: 10,
-        }}
-      >
-        Download Record as PNG
-      </Button>
-    </Paper>
-  ))
-) : (
-  <Typography
-    variant="body1"
-    sx={{
-      textAlign: 'center',
-      marginTop: 3,
-      color: theme.palette.text.secondary,
-    }}
-  >
-    No records found for the selected date range.
-  </Typography>
-)}
 
       {/* Floating "+" Button */}
       <Fab
