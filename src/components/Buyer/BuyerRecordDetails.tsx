@@ -137,7 +137,14 @@ const BuyerRecordDetails: React.FC = () => {
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return 'No Date Available';
     const date = new Date(dateString);
-    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
+    // Format the date to dd/mm/yyyy
+    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero if needed
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
   };
 
   const downloadPNG = async (recordId: number) => {
@@ -395,13 +402,14 @@ const BuyerRecordDetails: React.FC = () => {
             {/* Balance + Income */}
             {buyerInfo && (
               <Typography
-                variant="body1"
-                sx={{
-                  marginLeft: isMobile ? 2 : 10,
-                  marginTop: 1,
-                  color: theme.palette.text.secondary,
-                }}
-              >
+              variant="h6"
+              sx={{
+                marginTop: 3,
+                marginLeft: isMobile ? 2 : 10,
+                fontWeight: 'bold',
+                color: theme.palette.primary.main,
+              }}
+            >
                 Balance + Income: ₹{buyerInfo.amount}
               </Typography>
             )}
