@@ -43,6 +43,7 @@ interface Variant {
   product_name: string;
   quantity: number;
   weight: number;
+  rate: number;
   price: number;
   order_index: number; // Ensure this is included in the Variant interface
 }
@@ -137,14 +138,7 @@ const BuyerRecordDetails: React.FC = () => {
   const formatDate = (dateString: string | null | undefined): string => {
     if (!dateString) return 'No Date Available';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid Date';
-
-    // Format the date to dd/mm/yyyy
-    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero if needed
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
   };
 
   const downloadPNG = async (recordId: number) => {
@@ -360,6 +354,7 @@ const BuyerRecordDetails: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>Product Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Quantity</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Rate</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Price</TableCell>
                 </TableRow>
               </TableHead>
@@ -373,6 +368,7 @@ const BuyerRecordDetails: React.FC = () => {
                         <TableCell>{variant.product_name}</TableCell>
                         <TableCell>{variant.quantity}</TableCell>
                         <TableCell>{variant.weight} kg</TableCell>
+                        <TableCell>{variant.rate}</TableCell>
                         <TableCell>₹{variant.price}</TableCell>
                       </TableRow>
                     ))
@@ -402,14 +398,13 @@ const BuyerRecordDetails: React.FC = () => {
             {/* Balance + Income */}
             {buyerInfo && (
               <Typography
-              variant="h6"
-              sx={{
-                marginTop: 3,
-                marginLeft: isMobile ? 2 : 10,
-                fontWeight: 'bold',
-                color: theme.palette.primary.main,
-              }}
-            >
+                variant="body1"
+                sx={{
+                  marginLeft: isMobile ? 2 : 10,
+                  marginTop: 1,
+                  color: theme.palette.text.secondary,
+                }}
+              >
                 Balance + Income: ₹{buyerInfo.amount}
               </Typography>
             )}
