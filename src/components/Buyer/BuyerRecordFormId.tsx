@@ -38,10 +38,7 @@ const productNames = [
   { id: 3, name: 'கற்பூரவள்ளி' },
   { id: 4, name: 'சக்கை' },
   { id: 5, name: 'காசாளி' },
-  { id: 6, name: 'நேந்திரம்' },
-  { id: 7, name: 'ரஸ்தாலி'},
-  { id: 8, name: 'பூவன் தார்' },
-  { id: 9, name: 'Transport' },
+  { id: 6, name: 'Transport' },
 
 ];
 
@@ -53,7 +50,7 @@ const BuyerRecordForm: React.FC = () => {
   const [visitDate, setVisitDate] = useState('');
   const [amount, setAmount] = useState<number>(0);
   const [varients, setVarients] = useState([
-    { productName: 1, quantity: 0, price: 0, weight: 0, orderIndex: 0 },
+    { productName: 1, quantity: 0, price: 0, weight: 0, rate: 0, orderIndex: 0 },
 ]);
 
   const [alert, setAlert] = useState<{
@@ -93,7 +90,7 @@ const BuyerRecordForm: React.FC = () => {
 const addVarient = () => {
   setVarients(prev => [
       ...prev,
-      { productName: 1, quantity: 0, price: 0, weight: 0, orderIndex: prev.length }
+      { productName: 1, quantity: 0, price: 0, weight: 0, rate: 0, orderIndex: prev.length }
   ]);
 };
 
@@ -121,6 +118,7 @@ const addVarient = () => {
         quantity: varient.quantity || 0,
         price: varient.price || 0,
         weight: varient.weight || 0,
+        rate: varient.rate || 0,
         orderIndex: index,
       })),
     };
@@ -253,6 +251,21 @@ const addVarient = () => {
                         index,
                         'weight',
                         parseFloat(e.target.value) || 0
+                      )
+                    }
+                    sx={{ marginBottom: 2 }}
+                  />
+
+<TextField
+                    label="Rate"
+                    type="number"
+                    fullWidth
+                    value={varient.rate}
+                    onChange={(e) =>
+                      handleVarientChange(
+                        index,
+                        'rate',
+                        parseInt(e.target.value) || 0
                       )
                     }
                     sx={{ marginBottom: 2 }}
