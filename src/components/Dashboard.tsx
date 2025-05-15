@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
             <ListItem component={Link} to="/buyer-income" sx={{ cursor: 'pointer' }}>
               <ListItemText primary="Buyer Income" />
             </ListItem>
-            <ListItem component={Link} to="/buyers-records" sx={{ cursor: 'pointer' }}> {/* ✅ Ensure consistency */}
+            <ListItem component={Link} to="/buyer-record" sx={{ cursor: 'pointer' }}> {/* ✅ Ensure consistency */}
               <ListItemText primary="Buyer Records" />
             </ListItem>
             <ListItem component={Link} to="/land-owner-form" sx={{ cursor: 'pointer' }}>
