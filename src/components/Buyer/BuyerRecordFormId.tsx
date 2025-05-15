@@ -37,9 +37,11 @@ const productNames = [
   { id: 2, name: 'கோழிக்குடு' },
   { id: 3, name: 'கற்பூரவள்ளி' },
   { id: 4, name: 'சக்கை' },
-  { id: 5, name: 'காசாளி' },
+  { id: 5, name: 'கதளி' },
   { id: 6, name: 'நேந்திரம்' },
-  { id: 7, name: 'Transport' },
+  { id: 7, name: 'பூவன்' },
+  { id: 8, name: 'ரஸ்தாளி' },
+  { id: 9, name: 'Transport' },
 ];
 
 const BuyerRecordForm: React.FC = () => {
