@@ -61,7 +61,7 @@ const App: React.FC = () => {
           <Route path="/land-available/edit/:id" element={<EditLandAvailable />} />
           <Route path="/cutoff-record/:id" element={<CutoffRecord />} />
           <Route path="/add-land-available" element={<AddLandAvailable />} />
-          <Route path="/land-ower-form" element={<LandOwnerRecordForm />} />
+          <Route path="/land-owner-form" element={<LandOwnerRecordForm />} />
           <Route path="/landowner-lands/:landownerId" element={<Lands />} />
           <Route path="/add-land/:landOwnerId" element={<AddLands />} />
         </Routes>
