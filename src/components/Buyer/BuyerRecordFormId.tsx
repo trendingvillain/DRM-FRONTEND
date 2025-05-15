@@ -89,14 +89,19 @@ const BuyerRecordForm: React.FC = () => {
     value: any
   ) => {
     const updatedVarients = [...varients];
-    updatedVarients[index][field] = value;
-
-    const { quantity, weight, rate, calcBy } = updatedVarients[index];
+    const updatedVarient = {
+      ...updatedVarients[index],
+      [field]: value,
+    };
+  
+    const { quantity, weight, rate, calcBy } = updatedVarient;
     const price = (calcBy === 'quantity' ? quantity : weight) * rate;
-    updatedVarients[index].price = isNaN(price) ? 0 : price;
-
+    updatedVarient.price = isNaN(price) ? 0 : price;
+  
+    updatedVarients[index] = updatedVarient;
     setVarients(updatedVarients);
   };
+  
 
   const addVarient = () => {
     setVarients(prev => [
