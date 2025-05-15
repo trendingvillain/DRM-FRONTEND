@@ -135,11 +135,17 @@ const BuyerRecordDetails: React.FC = () => {
 
   const handleSnackbarClose = () => setSnackbarOpen(false);
 
-  const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) return 'No Date Available';
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleDateString();
-  };
+ const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return 'No Date Available';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Invalid Date';
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+  const year = date.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
 
   const downloadPNG = async (recordId: number) => {
     const element = document.getElementById(`record-${recordId}`);
