@@ -39,7 +39,6 @@ const productNames = [
   { id: 4, name: 'சக்கை' },
   { id: 5, name: 'காசாளி' },
   { id: 6, name: 'Transport' },
-
 ];
 
 const BuyerRecordForm: React.FC = () => {
@@ -50,8 +49,16 @@ const BuyerRecordForm: React.FC = () => {
   const [visitDate, setVisitDate] = useState('');
   const [amount, setAmount] = useState<number>(0);
   const [varients, setVarients] = useState([
-    { productName: 1, quantity: 0, price: 0, weight: 0, rate: 0, orderIndex: 0 },
-]);
+    {
+      productName: 1,
+      quantity: 0,
+      weight: 0,
+      rate: 0,
+      price: 0,
+      calcBy: 'weight',
+      orderIndex: 0,
+    },
+  ]);
 
   const [alert, setAlert] = useState<{
     type: 'success' | 'error' | null;
@@ -62,7 +69,6 @@ const BuyerRecordForm: React.FC = () => {
   });
   const navigate = useNavigate();
 
-  // Fetch buyer by buyerId from the URL
   useEffect(() => {
     const fetchBuyer = async () => {
       try {
@@ -78,22 +84,34 @@ const BuyerRecordForm: React.FC = () => {
   }, [buyerId]);
 
   const handleVarientChange = (
-  index: number,
-  field: keyof typeof varients[number], // Explicitly define allowed keys
-  value: any
-) => {
-  const updatedVarients = [...varients];
-  updatedVarients[index][field] = value || 0; // Now TypeScript knows `field` is valid
-  setVarients(updatedVarients);
-};
+    index: number,
+    field: keyof typeof varients[number],
+    value: any
+  ) => {
+    const updatedVarients = [...varients];
+    updatedVarients[index][field] = value;
 
-const addVarient = () => {
-  setVarients(prev => [
+    const { quantity, weight, rate, calcBy } = updatedVarients[index];
+    const price = (calcBy === 'quantity' ? quantity : weight) * rate;
+    updatedVarients[index].price = isNaN(price) ? 0 : price;
+
+    setVarients(updatedVarients);
+  };
+
+  const addVarient = () => {
+    setVarients(prev => [
       ...prev,
-      { productName: 1, quantity: 0, price: 0, weight: 0, rate: 0, orderIndex: prev.length }
-  ]);
-};
-
+      {
+        productName: 1,
+        quantity: 0,
+        weight: 0,
+        rate: 0,
+        price: 0,
+        calcBy: 'weight',
+        orderIndex: prev.length,
+      },
+    ]);
+  };
 
   const removeVarient = (index: number) => {
     if (varients.length > 1) {
@@ -113,8 +131,7 @@ const addVarient = () => {
       amount: amount || 0,
       varients: varients.map((varient, index) => ({
         productName:
-          productNames.find((product) => product.id === varient.productName)
-            ?.name || '',
+          productNames.find(product => product.id === varient.productName)?.name || '',
         quantity: varient.quantity || 0,
         price: varient.price || 0,
         weight: varient.weight || 0,
@@ -143,17 +160,11 @@ const addVarient = () => {
         <Typography
           variant={isMobile ? 'h6' : 'h5'}
           gutterBottom
-          sx={{
-            textAlign: 'center',
-            fontWeight: 'bold',
-            color: theme.palette.primary.main,
-            marginBottom: 3,
-          }}
+          sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main, marginBottom: 3 }}
         >
           Create Buyer Record
         </Typography>
 
-        {/* Alert */}
         {alert.type && (
           <Alert
             severity={alert.type}
@@ -167,7 +178,6 @@ const addVarient = () => {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={isMobile ? 2 : 4}>
-            {/* Buyer Details Section */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Buyer</InputLabel>
@@ -204,19 +214,16 @@ const addVarient = () => {
               />
             </Grid>
 
-            {/* Product Variants Section */}
             <Grid item xs={12} md={6}>
               {varients.map((varient, index) => (
                 <Paper key={index} sx={{ padding: 2, marginBottom: 2 }}>
-                  <Typography variant="h6">Product {index + 1}</Typography>
+                  <Typography variant="h6" gutterBottom>Product {index + 1}</Typography>
 
                   <FormControl fullWidth sx={{ marginBottom: 2 }}>
                     <InputLabel>Product Name</InputLabel>
                     <Select
                       value={varient.productName}
-                      onChange={(e) =>
-                        handleVarientChange(index, 'productName', e.target.value)
-                      }
+                      onChange={(e) => handleVarientChange(index, 'productName', e.target.value)}
                     >
                       {productNames.map((product) => (
                         <MenuItem key={product.id} value={product.id}>
@@ -226,49 +233,61 @@ const addVarient = () => {
                     </Select>
                   </FormControl>
 
-                  <TextField
-                    label="Quantity"
-                    type="number"
-                    fullWidth
-                    value={varient.quantity}
-                    onChange={(e) =>
-                      handleVarientChange(
-                        index,
-                        'quantity',
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    sx={{ marginBottom: 2 }}
-                  />
+                  <Grid container spacing={2} sx={{ marginBottom: 2 }}>
+                   
+                    <Grid item xs={6}>
+                      <FormControl>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={varient.calcBy === 'weight'}
+                            onChange={() => handleVarientChange(index, 'calcBy', 'weight')}
+                          /> Weight
+                        </label>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <FormControl>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={varient.calcBy === 'quantity'}
+                            onChange={() => handleVarientChange(index, 'calcBy', 'quantity')}
+                          /> Quantity
+                        </label>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Quantity"
+                        type="number"
+                        fullWidth
+                        value={varient.quantity}
+                        onChange={(e) => handleVarientChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      />
+                    </Grid>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Weight"
+                        type="number"
+                        fullWidth
+                        value={varient.weight}
+                        onChange={(e) => handleVarientChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                      />
+                    </Grid>
+                  </Grid>
 
                   <TextField
-                    label="Weight"
-                    type="number"
-                    fullWidth
-                    value={varient.weight}
-                    onChange={(e) =>
-                      handleVarientChange(
-                        index,
-                        'weight',
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    sx={{ marginBottom: 2 }}
-                  />
-
-<TextField
                     label="Rate"
                     type="number"
                     fullWidth
                     value={varient.rate}
-                    onChange={(e) =>
-                      handleVarientChange(
-                        index,
-                        'rate',
-                        parseInt(e.target.value) || 0
-                      )
-                    }
-                    sx={{ marginBottom: 2 }}
+                    onChange={(e) => handleVarientChange(index, 'rate', parseFloat(e.target.value) || 0)}
+                    sx={{ marginTop: 2 }}
                   />
 
                   <TextField
@@ -276,14 +295,8 @@ const addVarient = () => {
                     type="number"
                     fullWidth
                     value={varient.price}
-                    onChange={(e) =>
-                      handleVarientChange(
-                        index,
-                        'price',
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    sx={{ marginBottom: 2 }}
+                    InputProps={{ readOnly: true }}
+                    sx={{ marginTop: 2 }}
                   />
 
                   <Button
@@ -292,33 +305,24 @@ const addVarient = () => {
                     onClick={() => removeVarient(index)}
                     disabled={varients.length === 1}
                     fullWidth
+                    sx={{ marginTop: 2 }}
                   >
                     Remove Product
                   </Button>
                 </Paper>
               ))}
 
-              <Button
-                variant="outlined"
-                onClick={addVarient}
-                sx={{ marginTop: 2 }}
-                fullWidth
-              >
+              <Button variant="outlined" onClick={addVarient} sx={{ marginTop: 2 }} fullWidth>
                 Add Product
               </Button>
             </Grid>
           </Grid>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             variant="contained"
             color="primary"
-            sx={{
-              marginTop: 3,
-              width: isMobile ? '100%' : 'auto',
-              padding: isMobile ? 1.5 : 2,
-            }}
+            sx={{ marginTop: 3, width: isMobile ? '100%' : 'auto', padding: isMobile ? 1.5 : 2 }}
           >
             Submit
           </Button>
