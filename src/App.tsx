@@ -44,7 +44,7 @@ const App: React.FC = () => {
           <Route path="/cutoffs-records" element={<CutoffsRecords />} />
           <Route path="/buyers-records-details" element={<BuyersRecords />} />
           <Route path="/buyer-income" element={<BuyerIncomeComponent />} />
-          <Route path="/buyer-records" element={<BuyerRecordsComponent />} />
+          <Route path="/buyer-record" element={<BuyerRecordsComponent />} />
           <Route path="/create-cutoff/:id" element={<CutoffComponent />} />
           <Route path="/land-available" element={<LandAvailableComponent />} />
           <Route path="/landowners" element={<LandOwnerComponent />} />
