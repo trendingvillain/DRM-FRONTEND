@@ -16,19 +16,24 @@ import API_BASE_URL from '../../config/apiConfig';
 const AddLandOwner: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const navigate = useNavigate(); // For navigation after adding the land owner
+  const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [amount, setAmount] = useState(0);
   const [location, setLocation] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
+  const [branch, setBranch] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Handle phone number validation
+  // Phone validation
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
-    if (input.length > 10) return; // Limit to 10 digits
+    const input = e.target.value.replace(/\D/g, '');
+
+    if (input.length > 10) return;
 
     setPhoneNumber(input);
 
@@ -39,21 +44,27 @@ const AddLandOwner: React.FC = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phoneError) return; // Prevent submission if phone validation fails
+
+    if (phoneError) return;
 
     setLoading(true);
+
     try {
       await axios.post(`${API_BASE_URL}/api/land-owners`, {
         name,
         amount,
         location,
-        phoneNumber: `${phoneNumber}`, // Ensure +91 prefix
+        phoneNumber,
+        bank_name: bankName,
+        account_number: accountNumber,
+        ifsc_code: ifscCode,
+        branch,
       });
 
-      navigate(-1); // Redirect after success
+      navigate(-1);
+
     } catch (error) {
       console.error('Error adding land owner:', error);
     } finally {
@@ -97,19 +108,16 @@ const AddLandOwner: React.FC = () => {
         >
           <TextField
             label="Name"
-            variant="outlined"
             fullWidth
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            autoFocus
           />
 
           <TextField
             label="Amount"
-            variant="outlined"
-            fullWidth
             type="number"
+            fullWidth
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
             required
@@ -117,17 +125,14 @@ const AddLandOwner: React.FC = () => {
 
           <TextField
             label="Location"
-            variant="outlined"
             fullWidth
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             required
           />
 
-          {/* Phone Number Input */}
           <TextField
             label="Phone Number"
-            variant="outlined"
             fullWidth
             value={phoneNumber}
             onChange={handlePhoneChange}
@@ -137,6 +142,43 @@ const AddLandOwner: React.FC = () => {
             inputProps={{ maxLength: 10 }}
           />
 
+          {/* Bank Details Section */}
+
+          <Typography
+            variant="h6"
+            sx={{ marginTop: 2, color: theme.palette.primary.main }}
+          >
+            Bank Details
+          </Typography>
+
+          <TextField
+            label="Bank Name"
+            fullWidth
+            value={bankName}
+            onChange={(e) => setBankName(e.target.value)}
+          />
+
+          <TextField
+            label="Account Number"
+            fullWidth
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+          />
+
+          <TextField
+            label="IFSC Code"
+            fullWidth
+            value={ifscCode}
+            onChange={(e) => setIfscCode(e.target.value)}
+          />
+
+          <TextField
+            label="Branch"
+            fullWidth
+            value={branch}
+            onChange={(e) => setBranch(e.target.value)}
+          />
+
           <Button
             variant="contained"
             color="primary"
@@ -144,7 +186,8 @@ const AddLandOwner: React.FC = () => {
             disabled={loading}
             sx={{
               padding: isMobile ? 1.5 : 2,
-              fontSize: isMobile ? '0.8rem' : '1rem',
+              fontSize: isMobile ? '0.9rem' : '1rem',
+              marginTop: 2,
             }}
           >
             {loading ? 'Adding...' : 'Add Land Owner'}
