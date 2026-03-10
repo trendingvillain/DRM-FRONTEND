@@ -28,23 +28,26 @@ const BuyerIncome: React.FC = () => {
   const { buyerId: urlBuyerId } = useParams<{ buyerId: string }>();
   const navigate = useNavigate();
 
-  // State for buyer details (if buyerId is provided) and for buyer list (if not)
   const [buyer, setBuyer] = useState<Buyer | null>(null);
   const [buyers, setBuyers] = useState<Buyer[]>([]);
 
-  // Use the buyerId from URL if available; otherwise, allow user selection
   const [selectedBuyerId, setSelectedBuyerId] = useState<number | ''>(
     urlBuyerId ? Number(urlBuyerId) : ''
   );
+
   const [visitDate, setVisitDate] = useState<string>('');
   const [amount, setAmount] = useState<number>(0);
+
+  // NEW FIELDS
+  const [payment, setPayment] = useState<string>('cash');
+  const [reason, setReason] = useState<string>('');
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (urlBuyerId) {
-      // If buyerId is provided in the URL, fetch that buyer's details.
       axios
         .get<Buyer>(`${API_BASE_URL}/api/buyers/${urlBuyerId}`)
         .then((response) => {
@@ -56,42 +59,54 @@ const BuyerIncome: React.FC = () => {
           setError('Error fetching buyer details.');
         });
     } else {
-      // If no buyerId in the URL, fetch the full buyer list for selection.
       axios
         .get<Buyer[]>(`${API_BASE_URL}/api/buyers`)
         .then((response) => {
           setBuyers(response.data);
         })
         .catch((err) => {
-  console.error('Error fetching buyer list:', err);
-  setError('Error fetching buyer list.');
-});
-
+          console.error('Error fetching buyer list:', err);
+          setError('Error fetching buyer list.');
+        });
     }
   }, [urlBuyerId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Ensure all fields are filled
+
     if (!visitDate || !amount || !selectedBuyerId) {
       setError('Please fill out all fields.');
       return;
     }
+
     setLoading(true);
     setError(null);
+
     try {
       const response = await axios.post(`${API_BASE_URL}/api/buyer-income`, {
         visitDate,
         amount,
+        payment,
+        reason,
         buyer: { id: selectedBuyerId },
       });
+
       console.log('Response:', response.data);
+
       setSuccessMessage('Income data submitted successfully!');
+
+      // Reset form
+      setVisitDate('');
+      setAmount(0);
+      setPayment('cash');
+      setReason('');
+
     } catch (err) {
       if (axios.isAxiosError(err)) {
         console.error('Axios error response:', err.response?.data);
         setError(
-          err.response?.data?.message || 'Error submitting buyer income data.'
+          err.response?.data?.message ||
+            'Error submitting buyer income data.'
         );
       } else {
         setError('Error submitting buyer income data.');
@@ -103,7 +118,7 @@ const BuyerIncome: React.FC = () => {
 
   const handleSnackbarClose = () => {
     if (successMessage) {
-      navigate('/'); // Redirect on success
+      navigate('/');
     }
     setError(null);
     setSuccessMessage(null);
@@ -125,9 +140,10 @@ const BuyerIncome: React.FC = () => {
         Buyer Income Form
       </Typography>
 
-      {/* Form Container */}
+      {/* Form */}
       <Paper elevation={3} sx={{ padding: isMobile ? 2 : 4 }}>
         <form onSubmit={handleSubmit}>
+
           {/* Buyer Field */}
           {urlBuyerId ? (
             <TextField
@@ -155,7 +171,7 @@ const BuyerIncome: React.FC = () => {
             </TextField>
           )}
 
-          {/* Visit Date Field */}
+          {/* Visit Date */}
           <TextField
             label="Visit Date"
             type="date"
@@ -164,12 +180,10 @@ const BuyerIncome: React.FC = () => {
             fullWidth
             required
             sx={{ marginBottom: 2 }}
-            InputLabelProps={{
-              shrink: true,
-            }}
+            InputLabelProps={{ shrink: true }}
           />
 
-          {/* Amount Field */}
+          {/* Amount */}
           <TextField
             label="Amount"
             type="number"
@@ -177,6 +191,31 @@ const BuyerIncome: React.FC = () => {
             onChange={(e) => setAmount(Number(e.target.value))}
             fullWidth
             required
+            sx={{ marginBottom: 2 }}
+          />
+
+          {/* Payment Type */}
+          <TextField
+            label="Payment Type"
+            select
+            value={payment}
+            onChange={(e) => setPayment(e.target.value)}
+            fullWidth
+            sx={{ marginBottom: 2 }}
+          >
+            <MenuItem value="cash">Cash</MenuItem>
+            <MenuItem value="bank">Bank</MenuItem>
+            <MenuItem value="upi">UPI</MenuItem>
+          </TextField>
+
+          {/* Reason */}
+          <TextField
+            label="Reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            fullWidth
+            multiline
+            rows={2}
             sx={{ marginBottom: 2 }}
           />
 
@@ -195,6 +234,7 @@ const BuyerIncome: React.FC = () => {
               {loading ? <CircularProgress size={24} /> : 'Submit'}
             </Button>
           </Grid>
+
         </form>
       </Paper>
 
@@ -205,7 +245,7 @@ const BuyerIncome: React.FC = () => {
           autoHideDuration={6000}
           onClose={handleSnackbarClose}
         >
-          <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          <Alert severity="error" onClose={handleSnackbarClose}>
             {error}
           </Alert>
         </Snackbar>
@@ -218,7 +258,7 @@ const BuyerIncome: React.FC = () => {
           autoHideDuration={6000}
           onClose={handleSnackbarClose}
         >
-          <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          <Alert severity="success" onClose={handleSnackbarClose}>
             {successMessage}
           </Alert>
         </Snackbar>
