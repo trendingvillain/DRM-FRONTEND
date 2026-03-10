@@ -33,6 +33,8 @@ interface BuyerIncome {
   };
   visit_date: string;
   amount: number;
+  payment: string;
+  reason: string;
 }
 
 const BuyerIncomeDetails: React.FC = () => {
@@ -228,6 +230,26 @@ const BuyerIncomeDetails: React.FC = () => {
               >
                 Amount
               </TableCell>
+
+              <TableCell
+      sx={{
+        backgroundColor: '#e0f7fa',
+        fontWeight: 'bold',
+        fontSize: isMobile ? '0.8rem' : '1rem',
+      }}
+    >
+      Payment
+    </TableCell>
+
+    <TableCell
+      sx={{
+        backgroundColor: '#e0f7fa',
+        fontWeight: 'bold',
+        fontSize: isMobile ? '0.8rem' : '1rem',
+      }}
+    >
+      Reason
+    </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -236,6 +258,8 @@ const BuyerIncomeDetails: React.FC = () => {
                 <TableRow key={income.id}>
                   <TableCell>{formatDate(income.visit_date)}</TableCell>
                   <TableCell>{income.amount}</TableCell>
+                  <TableCell>{income.payment}</TableCell>
+                  <TableCell>{income.reason}</TableCell>
                 </TableRow>
               ))
             ) : (
