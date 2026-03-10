@@ -30,8 +30,11 @@ interface LandOwner {
   name: string;
   amount: number;
   location: string;
-  createdDate: string;
-  phonenumber: number;
+  phonenumber: string;
+  bank_name: string;
+  account_number: string;
+  ifsc_code: string;
+  branch: string;
 }
 
 const LandOwner: React.FC = () => {
@@ -143,24 +146,16 @@ const LandOwner: React.FC = () => {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                ID
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                Name
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                Amount
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                Location
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                Phone Number
-              </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white', background: '#1976d2' }}>
-                Actions
-              </TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Name</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Location</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Phone</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Bank</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Account</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>IFSC</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Branch</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', background: '#1976d2', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -172,6 +167,10 @@ const LandOwner: React.FC = () => {
                   <TableCell>{landOwner.amount}</TableCell>
                   <TableCell>{landOwner.location}</TableCell>
                   <TableCell>{landOwner.phonenumber}</TableCell>
+                  <TableCell>{landOwner.bank_name}</TableCell>
+                  <TableCell>{landOwner.account_number}</TableCell>
+                  <TableCell>{landOwner.ifsc_code}</TableCell>
+                  <TableCell>{landOwner.branch}</TableCell>
                   <TableCell>
                     <IconButton
                       aria-label="more"
