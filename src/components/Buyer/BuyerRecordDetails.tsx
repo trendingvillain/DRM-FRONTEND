@@ -43,9 +43,11 @@ interface Variant {
   product_name: string;
   quantity: number;
   weight: number;
+  wastage: number;
+  final_weight: number;
   rate: number;
   price: number;
-  order_index: number; // Ensure this is included in the Variant interface
+  order_index: number;
 }
 
 const BuyerRecordDetails: React.FC = () => {
@@ -360,6 +362,8 @@ const BuyerRecordDetails: React.FC = () => {
                   <TableCell sx={{ fontWeight: 'bold' }}>Product Name</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Quantity</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Wastage</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Final Weight</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Rate</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Price</TableCell>
                 </TableRow>
@@ -374,6 +378,8 @@ const BuyerRecordDetails: React.FC = () => {
                         <TableCell>{variant.product_name}</TableCell>
                         <TableCell>{variant.quantity}</TableCell>
                         <TableCell>{variant.weight} kg</TableCell>
+                        <TableCell>{variant.wastage} kg</TableCell>
+                        <TableCell>{variant.final_weight} kg</TableCell>
                         <TableCell>{variant.rate}</TableCell>
                         <TableCell>₹{variant.price}</TableCell>
                       </TableRow>
@@ -411,7 +417,7 @@ const BuyerRecordDetails: React.FC = () => {
                   color: theme.palette.text.secondary,
                 }}
               >
-                Balance + Income: ₹{buyerInfo.amount}
+                Old Balance + New Bill: ₹{buyerInfo.amount}
               </Typography>
             )}
 
