@@ -11,26 +11,15 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  FormHelperText,
   TextField,
   Alert,
   AlertTitle,
   useTheme,
   useMediaQuery,
+  Box
 } from '@mui/material';
-import { styled } from '@mui/system';
-import API_BASE_URL from '../../config/apiConfig';
 
-const FormContainer = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
-  maxWidth: 1200,
-  width: '100%',
-  marginTop: 50,
-  marginBottom: 50,
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-  },
-}));
+import API_BASE_URL from '../../config/apiConfig';
 
 const productNames = [
   { id: 1, name: 'நாடு' },
@@ -41,303 +30,432 @@ const productNames = [
   { id: 6, name: 'நேந்திரம்' },
   { id: 7, name: 'பூவன்' },
   { id: 8, name: 'ரஸ்தாளி' },
-  { id: 9, name: 'Transport' },
+  { id: 9, name: 'Transport' }
 ];
 
 const BuyerRecordForm: React.FC = () => {
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const { buyerId } = useParams<{ buyerId: string }>();
+  const navigate = useNavigate();
+
   const [selectedBuyer, setSelectedBuyer] = useState<any>(null);
   const [visitDate, setVisitDate] = useState('');
-  const [amount, setAmount] = useState<number>(0);
+
   const [varients, setVarients] = useState([
     {
       productName: 1,
       quantity: 0,
       weight: 0,
+      wastage: 0,
+      finalWeight: 0,
       rate: 0,
       price: 0,
-      calcBy: 'weight',
-      orderIndex: 0,
-    },
+      calcBy: 'weight'
+    }
   ]);
 
   const [alert, setAlert] = useState<{
-    type: 'success' | 'error' | null;
-    message: string;
+    type: 'success' | 'error' | null,
+    message: string
   }>({
     type: null,
-    message: '',
+    message: ''
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
+
     const fetchBuyer = async () => {
+
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/buyers/${buyerId}`);
-        setSelectedBuyer(response.data);
-      } catch (error) {
-        console.error('Error fetching buyer:', error);
+
+        const res = await axios.get(`${API_BASE_URL}/api/buyers/${buyerId}`);
+        setSelectedBuyer(res.data);
+
+      } catch (err) {
+        console.error(err);
       }
+
     };
+
     if (buyerId) {
       fetchBuyer();
     }
+
   }, [buyerId]);
+
+
 
   const handleVarientChange = (
     index: number,
-    field: keyof typeof varients[number],
+    field: string,
     value: any
   ) => {
-    const updatedVarients = [...varients];
-    const updatedVarient = {
-      ...updatedVarients[index],
-      [field]: value,
+
+    const updated = [...varients];
+
+    const item: any = {
+      ...updated[index],
+      [field]: value
     };
-  
-    const { quantity, weight, rate, calcBy } = updatedVarient;
-    const price = (calcBy === 'quantity' ? quantity : weight) * rate;
-    updatedVarient.price = isNaN(price) ? 0 : price;
-  
-    updatedVarients[index] = updatedVarient;
-    setVarients(updatedVarients);
+
+    const quantity = Number(item.quantity || 0);
+    const weight = Number(item.weight || 0);
+    const wastage = Number(item.wastage || 0);
+    const rate = Number(item.rate || 0);
+
+    const finalWeight = weight - wastage;
+
+    let price = 0;
+
+    if (item.calcBy === 'quantity') {
+      price = quantity * rate;
+    } else {
+      price = finalWeight * rate;
+    }
+
+    item.finalWeight = finalWeight < 0 ? 0 : finalWeight;
+    item.price = price;
+
+    updated[index] = item;
+
+    setVarients(updated);
+
   };
-  
+
+
 
   const addVarient = () => {
-    setVarients(prev => [
-      ...prev,
+
+    setVarients([
+      ...varients,
       {
         productName: 1,
         quantity: 0,
         weight: 0,
+        wastage: 0,
+        finalWeight: 0,
         rate: 0,
         price: 0,
-        calcBy: 'weight',
-        orderIndex: prev.length,
-      },
+        calcBy: 'weight'
+      }
     ]);
+
   };
+
+
 
   const removeVarient = (index: number) => {
-    if (varients.length > 1) {
-      setVarients(varients.filter((_, i) => i !== index));
-    }
+
+    if (varients.length === 1) return;
+
+    const updated = varients.filter((_, i) => i !== index);
+    setVarients(updated);
+
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!selectedBuyer) {
-      setAlert({ type: 'error', message: 'Please select a buyer.' });
-      return;
-    }
-    const formData = {
-      buyer: { id: selectedBuyer.id },
-      visitDate,
-      amount: amount || 0,
-      varients: varients.map((varient, index) => ({
-        productName:
-          productNames.find(product => product.id === varient.productName)?.name || '',
-        quantity: varient.quantity || 0,
-        price: varient.price || 0,
-        weight: varient.weight || 0,
-        rate: varient.rate || 0,
-        orderIndex: index,
-      })),
-    };
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+
+    e.preventDefault();
+
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/buyer-records`, formData);
-      if (response.status === 201) {
-        setAlert({ type: 'success', message: 'Buyer record created successfully!' });
-        navigate('/');
-      }
-    } catch (error) {
+
+      const payload = {
+
+        buyer: { id: selectedBuyer.id },
+
+        visitDate,
+
+        varients: varients.map((v) => ({
+
+          productName:
+            productNames.find(p => p.id === v.productName)?.name || '',
+
+          quantity: v.quantity,
+
+          weight: v.weight,
+
+          wastage: v.wastage,
+
+          rate: v.rate,
+
+          price: v.price
+
+        }))
+
+      };
+
+      await axios.post(`${API_BASE_URL}/api/buyer-records`, payload);
+
+      setAlert({
+        type: 'success',
+        message: 'Buyer Record Saved Successfully'
+      });
+
+      setTimeout(() => navigate('/'), 1200);
+
+    } catch (err) {
+
+      console.error(err);
+
       setAlert({
         type: 'error',
-        message: 'Failed to create buyer record. Please try again.',
+        message: 'Failed to save record'
       });
-      console.error('Error creating buyer record:', error);
+
     }
+
   };
 
+
+
   return (
+
     <Container>
-      <FormContainer elevation={3}>
+
+      <Paper sx={{ p: 4, mt: 5 }}>
+
         <Typography
           variant={isMobile ? 'h6' : 'h5'}
-          gutterBottom
-          sx={{ textAlign: 'center', fontWeight: 'bold', color: theme.palette.primary.main, marginBottom: 3 }}
+          fontWeight="bold"
+          textAlign="center"
+          mb={3}
         >
-          Create Buyer Record
+          Buyer Record
         </Typography>
 
         {alert.type && (
-          <Alert
-            severity={alert.type}
-            onClose={() => setAlert({ type: null, message: '' })}
-            sx={{ marginBottom: 3 }}
-          >
-            <AlertTitle>{alert.type === 'success' ? 'Success' : 'Error'}</AlertTitle>
+
+          <Alert severity={alert.type} sx={{ mb: 3 }}>
+            <AlertTitle>
+              {alert.type === 'success' ? 'Success' : 'Error'}
+            </AlertTitle>
             {alert.message}
           </Alert>
+
         )}
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={isMobile ? 2 : 4}>
+
+          <Grid container spacing={2}>
+
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Select Buyer</InputLabel>
-                <Select
-                  value={selectedBuyer ? selectedBuyer.id : ''}
-                  disabled
-                  fullWidth
-                  sx={{ marginBottom: 2 }}
-                >
-                  <MenuItem value={selectedBuyer?.id}>{selectedBuyer?.name}</MenuItem>
-                </Select>
-                <FormHelperText>Select the buyer for this record.</FormHelperText>
-              </FormControl>
+
+              <TextField
+                label="Buyer"
+                value={selectedBuyer?.name || ''}
+                fullWidth
+                disabled
+                sx={{ mb: 2 }}
+              />
 
               <TextField
                 label="Visit Date"
                 type="date"
                 fullWidth
+                InputLabelProps={{ shrink: true }}
                 value={visitDate}
                 onChange={(e) => setVisitDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                helperText="Select the visit date."
-                sx={{ marginBottom: 2 }}
               />
 
-              <TextField
-                label="Amount"
-                type="number"
-                fullWidth
-                value={amount}
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                helperText="Enter the total amount."
-                sx={{ marginBottom: 2 }}
-              />
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              {varients.map((varient, index) => (
-                <Paper key={index} sx={{ padding: 2, marginBottom: 2 }}>
-                  <Typography variant="h6" gutterBottom>Product {index + 1}</Typography>
 
-                  <FormControl fullWidth sx={{ marginBottom: 2 }}>
-                    <InputLabel>Product Name</InputLabel>
+
+            <Grid item xs={12} md={6}>
+
+              {varients.map((v, index) => (
+
+                <Paper key={index} sx={{ p: 2, mb: 2 }}>
+
+                  <Typography fontWeight="bold">
+                    Product {index + 1}
+                  </Typography>
+
+                  <FormControl fullWidth sx={{ mt: 2 }}>
+
+                    <InputLabel>Product</InputLabel>
+
                     <Select
-                      value={varient.productName}
-                      onChange={(e) => handleVarientChange(index, 'productName', e.target.value)}
+                      value={v.productName}
+                      label="Product"
+                      onChange={(e) =>
+                        handleVarientChange(index, 'productName', e.target.value)
+                      }
                     >
-                      {productNames.map((product) => (
-                        <MenuItem key={product.id} value={product.id}>
-                          {product.name}
+
+                      {productNames.map(p => (
+                        <MenuItem key={p.id} value={p.id}>
+                          {p.name}
                         </MenuItem>
                       ))}
+
                     </Select>
+
                   </FormControl>
 
-                  <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-                   
-                    <Grid item xs={6}>
-                      <FormControl>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={varient.calcBy === 'weight'}
-                            onChange={() => handleVarientChange(index, 'calcBy', 'weight')}
-                          /> Weight
-                        </label>
-                      </FormControl>
-                    </Grid>
 
-                    <Grid item xs={6}>
-                      <FormControl>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={varient.calcBy === 'quantity'}
-                            onChange={() => handleVarientChange(index, 'calcBy', 'quantity')}
-                          /> Quantity
-                        </label>
-                      </FormControl>
-                    </Grid>
-                  </Grid>
 
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                  {/* Weight / Quantity Selection */}
+
+                  <Box sx={{ display: 'flex', gap: 3, mt: 2 }}>
+
+                    <label>
+                      <input
+                        type="radio"
+                        name={`calc-${index}`}
+                        checked={v.calcBy === 'weight'}
+                        onChange={() =>
+                          handleVarientChange(index, 'calcBy', 'weight')
+                        }
+                      />
+                      Weight
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        name={`calc-${index}`}
+                        checked={v.calcBy === 'quantity'}
+                        onChange={() =>
+                          handleVarientChange(index, 'calcBy', 'quantity')
+                        }
+                      />
+                      Quantity
+                    </label>
+
+                  </Box>
+
+
+
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+
+                    <Grid item xs={4}>
                       <TextField
                         label="Quantity"
                         type="number"
                         fullWidth
-                        value={varient.quantity}
-                        onChange={(e) => handleVarientChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        value={v.quantity}
+                        onChange={(e) =>
+                          handleVarientChange(index, 'quantity', e.target.value)
+                        }
                       />
                     </Grid>
-                    <Grid item xs={6}>
+
+                    <Grid item xs={4}>
                       <TextField
                         label="Weight"
                         type="number"
                         fullWidth
-                        value={varient.weight}
-                        onChange={(e) => handleVarientChange(index, 'weight', parseFloat(e.target.value) || 0)}
+                        value={v.weight}
+                        onChange={(e) =>
+                          handleVarientChange(index, 'weight', e.target.value)
+                        }
                       />
                     </Grid>
+
+                    <Grid item xs={4}>
+                      <TextField
+                        label="Wastage"
+                        type="number"
+                        fullWidth
+                        value={v.wastage}
+                        onChange={(e) =>
+                          handleVarientChange(index, 'wastage', e.target.value)
+                        }
+                      />
+                    </Grid>
+
                   </Grid>
+
+
+
+                  <TextField
+                    label="Final Weight"
+                    type="number"
+                    value={v.finalWeight}
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    InputProps={{ readOnly: true }}
+                  />
+
+
 
                   <TextField
                     label="Rate"
                     type="number"
                     fullWidth
-                    value={varient.rate}
-                    onChange={(e) => handleVarientChange(index, 'rate', parseFloat(e.target.value) || 0)}
-                    sx={{ marginTop: 2 }}
+                    value={v.rate}
+                    onChange={(e) =>
+                      handleVarientChange(index, 'rate', e.target.value)
+                    }
+                    sx={{ mt: 2 }}
                   />
+
+
 
                   <TextField
                     label="Price"
                     type="number"
                     fullWidth
-                    value={varient.price}
+                    value={v.price}
+                    sx={{ mt: 2 }}
                     InputProps={{ readOnly: true }}
-                    sx={{ marginTop: 2 }}
                   />
 
+
+
                   <Button
-                    variant="outlined"
                     color="error"
-                    onClick={() => removeVarient(index)}
-                    disabled={varients.length === 1}
+                    variant="outlined"
                     fullWidth
-                    sx={{ marginTop: 2 }}
+                    sx={{ mt: 2 }}
+                    disabled={varients.length === 1}
+                    onClick={() => removeVarient(index)}
                   >
                     Remove Product
                   </Button>
+
                 </Paper>
+
               ))}
 
-              <Button variant="outlined" onClick={addVarient} sx={{ marginTop: 2 }} fullWidth>
+
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={addVarient}
+              >
                 Add Product
               </Button>
+
             </Grid>
+
           </Grid>
+
+
 
           <Button
             type="submit"
             variant="contained"
-            color="primary"
-            sx={{ marginTop: 3, width: isMobile ? '100%' : 'auto', padding: isMobile ? 1.5 : 2 }}
+            sx={{ mt: 3, width: isMobile ? '100%' : 'auto' }}
           >
             Submit
           </Button>
+
         </form>
-      </FormContainer>
+
+      </Paper>
+
     </Container>
+
   );
+
 };
 
 export default BuyerRecordForm;
