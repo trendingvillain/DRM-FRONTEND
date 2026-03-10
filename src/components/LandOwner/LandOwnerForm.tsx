@@ -16,54 +16,61 @@ import API_BASE_URL from '../../config/apiConfig';
 const LandOwnerForm: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { id } = useParams(); // Get the id from the URL params
+
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+
   const [landOwner, setLandOwner] = useState({
     name: '',
-    amount: 0,
     location: '',
+    amount: 0,
+    phoneNumber: '',
+    bank_name: '',
+    account_number: '',
+    ifsc_code: '',
+    branch: '',
   });
-  const [loading, setLoading] = useState(true); // Track loading state
 
-  // Fetch the current land owner details when the component mounts
   useEffect(() => {
     if (id) {
       axios
-        .get(`${API_BASE_URL}/api/land-owners/${id}`) // Updated API endpoint
+        .get(`${API_BASE_URL}/api/land-owners/${id}`)
         .then((response) => {
-          setLandOwner(response.data); // Populate state with fetched data
-          setLoading(false); // Set loading to false when data is fetched
+          setLandOwner(response.data);
+          setLoading(false);
         })
         .catch((error) => {
-          console.error('Error fetching land owner data:', error);
-          setLoading(false); // Handle error gracefully by stopping the loading state
+          console.error('Error fetching land owner:', error);
+          setLoading(false);
         });
     }
   }, [id]);
 
-  // Handle form submission for updating the land owner
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (id) {
-      axios
-        .put(`${API_BASE_URL}/api/land-owners/${id}`, landOwner)
-        .then(() => {
-          navigate(-1); // Navigate back to the list of land owners after update
-        })
-        .catch((error) => {
-          console.error('Error updating land owner:', error);
-        });
-    }
-  };
-
-  // Handle changes in the editable fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setLandOwner((prev) => ({ ...prev, [name]: value }));
+
+    setLandOwner((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    axios
+      .put(`${API_BASE_URL}/api/land-owners/${id}`, landOwner)
+      .then(() => {
+        navigate(-1);
+      })
+      .catch((error) => {
+        console.error('Error updating land owner:', error);
+      });
   };
 
   if (loading) {
-    // Show a loading spinner while the data is being fetched
     return (
       <Box
         sx={{
@@ -81,7 +88,6 @@ const LandOwnerForm: React.FC = () => {
 
   return (
     <Box sx={{ padding: isMobile ? 1 : 3 }}>
-      {/* Header */}
       <Typography
         variant={isMobile ? 'h5' : 'h4'}
         gutterBottom
@@ -95,7 +101,6 @@ const LandOwnerForm: React.FC = () => {
         Edit Land Owner
       </Typography>
 
-      {/* Form Container */}
       <Paper
         elevation={3}
         sx={{
@@ -106,45 +111,89 @@ const LandOwnerForm: React.FC = () => {
         }}
       >
         <form onSubmit={handleSubmit}>
-          {/* Name Field */}
           <TextField
             label="Name"
-            variant="outlined"
             fullWidth
-            value={landOwner.name || ''}
             name="name"
+            value={landOwner.name}
             onChange={handleChange}
             required
-            autoFocus
-            sx={{ marginBottom: 2 }}
+            sx={{ mb: 2 }}
           />
 
-          {/* Location Field */}
           <TextField
             label="Location"
-            variant="outlined"
             fullWidth
-            value={landOwner.location || ''}
             name="location"
+            value={landOwner.location}
             onChange={handleChange}
             required
-            sx={{ marginBottom: 2 }}
+            sx={{ mb: 2 }}
           />
 
-          {/* Amount Field */}
           <TextField
             label="Amount"
-            variant="outlined"
-            fullWidth
             type="number"
-            value={landOwner.amount}
+            fullWidth
             name="amount"
+            value={landOwner.amount}
             onChange={handleChange}
             required
-            sx={{ marginBottom: 3 }}
+            sx={{ mb: 2 }}
           />
 
-          {/* Submit Button */}
+          <TextField
+            label="Phone Number"
+            fullWidth
+            name="phoneNumber"
+            value={landOwner.phoneNumber}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <Typography
+            variant="h6"
+            sx={{ mt: 2, mb: 1, color: theme.palette.primary.main }}
+          >
+            Bank Details
+          </Typography>
+
+          <TextField
+            label="Bank Name"
+            fullWidth
+            name="bank_name"
+            value={landOwner.bank_name}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            label="Account Number"
+            fullWidth
+            name="account_number"
+            value={landOwner.account_number}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            label="IFSC Code"
+            fullWidth
+            name="ifsc_code"
+            value={landOwner.ifsc_code}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            label="Branch"
+            fullWidth
+            name="branch"
+            value={landOwner.branch}
+            onChange={handleChange}
+            sx={{ mb: 3 }}
+          />
+
           <Button
             variant="contained"
             color="primary"
@@ -152,7 +201,7 @@ const LandOwnerForm: React.FC = () => {
             fullWidth={isMobile}
             sx={{
               padding: isMobile ? 1.5 : 2,
-              fontSize: isMobile ? '0.8rem' : '1rem',
+              fontSize: isMobile ? '0.9rem' : '1rem',
             }}
           >
             Save Changes
